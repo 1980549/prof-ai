@@ -54,18 +54,38 @@ export const ChatDemo = () => {
     setConversation(prev => [...prev, userEntry]);
 
     try {
-      // Simulate AI response (in real implementation, this would call Gemini API)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Preparar contexto do usuário para personalização
+      const userContext = {
+        nome: profile?.nome,
+        tipo: profile?.tipo,
+        serie: profile?.serie,
+        idade: profile?.idade,
+        regiao: profile?.regiao,
+        objetivo: profile?.objetivo,
+        moedas: profile?.moedas,
+        conquistas: profile?.conquistas || []
+      };
+
+      // Chamar a API Gemini via Edge Function
+      const response = await fetch('https://nxincjuhkijzyjjcisml.supabase.co/functions/v1/chat-gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54aW5janVoa2lqenlqamNpc21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTI2MzksImV4cCI6MjA2Nzk2ODYzOX0.UjUY6c4QIBiZB3W2WRhFeW6yZ2mb7zOKv6qCXO7sBHM`,
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          userContext
+        }),
+      });
+
+      const data = await response.json();
       
-      const responses = [
-        "Ótima pergunta! Vou te ajudar com isso. Em matemática, esse conceito é fundamental para...",
-        "Que interessante! Em português, podemos analisar isso de várias formas. Primeiro, vamos ver...",
-        "Excelente! Em ciências, esse fenômeno acontece porque... Quer que eu explique com um exemplo prático?",
-        "Vou te explicar de um jeito fácil! Imagina que... Faz sentido para você?",
-        "Legal! Essa é uma dúvida muito comum. A resposta é... Quer fazer um exercício sobre isso?"
-      ];
-      
-      const aiResponse = responses[Math.floor(Math.random() * responses.length)];
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao processar pergunta');
+      }
+
+      const aiResponse = data.resposta || data.fallback;
       
       // Add AI response to conversation
       const aiEntry = {

@@ -70,7 +70,7 @@ const Index = () => {
                 <Brain className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Tutor AI Amigo</h1>
+                <h1 className="text-xl font-bold text-foreground">Prof AI</h1>
                 <p className="text-sm text-muted-foreground">Olá, {profile?.nome || 'Estudante'}!</p>
               </div>
             </Link>
@@ -244,7 +244,7 @@ const Index = () => {
                 <div className="p-2 bg-primary rounded-xl">
                   <Brain className="h-6 w-6 text-white" />
                 </div>
-                <h4 className="text-lg font-bold">Tutor AI Amigo</h4>
+                <h4 className="text-lg font-bold">Prof AI</h4>
               </div>
               <p className="text-muted text-sm">
                 Seu professor particular digital para um aprendizado personalizado e motivador.
@@ -283,7 +283,7 @@ const Index = () => {
           </div>
           
           <div className="border-t border-muted/20 mt-8 pt-8 text-center text-sm text-muted">
-            <p>© 2024 Tutor AI Amigo. Feito com ❤️ para estudantes brasileiros.</p>
+            <p>© 2024 Prof AI. Feito com ❤️ para estudantes brasileiros.</p>
           </div>
         </div>
       </footer>

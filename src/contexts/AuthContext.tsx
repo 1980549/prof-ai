@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN') {
           toast({
             title: "Login realizado com sucesso!",
-            description: "Bem-vindo de volta ao Tutor AI Amigo.",
+            description: "Bem-vindo de volta ao Prof AI.",
           });
         } else if (event === 'SIGNED_OUT') {
           toast({

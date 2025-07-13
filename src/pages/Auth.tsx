@@ -115,7 +115,7 @@ const Auth = () => {
               <Brain className="h-6 w-6 text-white" />
             </div>
             <div className="text-center">
-              <h1 className="text-xl font-bold text-foreground">Tutor AI Amigo</h1>
+              <h1 className="text-xl font-bold text-foreground">Prof AI</h1>
               <p className="text-sm text-muted-foreground">Seu professor particular digital</p>
             </div>
           </div>

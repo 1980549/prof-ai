@@ -1,99 +1,50 @@
-# 🤖 Tutor AI Amigo
+# 🤖 Prof AI
 
 Uma plataforma educacional inteligente que combina tutoria personalizada, gamificação e tecnologia de IA para proporcionar uma experiência de aprendizado envolvente e eficaz.
 
-## 📋 Visão Geral
+## ✨ Funcionalidades
 
-O **Tutor AI Amigo** é um sistema de tutoria digital que utiliza inteligência artificial para oferecer suporte educacional personalizado. A plataforma conta com:
+- **Chat Multimídia:** Envie perguntas por texto, voz (reconhecimento de fala) ou imagem (upload com OCR).
+- **Respostas em Áudio:** Ouça as respostas da IA com um clique.
+- **Análise de Exercícios por Imagem:** Faça upload de fotos de exercícios, extraia o texto automaticamente e receba explicações/resoluções da IA.
+- **Limites de uso:** Controle de perguntas diárias e uploads mensais, com alertas claros ao atingir limites.
+- **Histórico e Gamificação:** Todo o histórico de interações é salvo, com conquistas e moedas por participação.
+- **Privacidade e Segurança:** Apenas imagens JPEG/PNG até 5MB são aceitas. Dados sensíveis não são compartilhados.
 
-- 🎯 **Tutoria Personalizada**: Chat inteligente com IA Gemini que se adapta ao perfil do estudante
-- 🎮 **Gamificação**: Sistema de moedas, conquistas e missões para motivar o aprendizado
-- 📊 **Acompanhamento**: Histórico detalhado de interações e progresso do estudante
-- 🔐 **Segurança**: Autenticação robusta e políticas de privacidade rigorosas
-- 📱 **Multimídia**: Suporte a texto, áudio, imagens e comandos de voz
-- 👥 **Múltiplos Perfis**: Suporte para alunos, responsáveis e professores
+## 🛠️ Bibliotecas e Tecnologias
+- React, Vite, TypeScript
+- Tesseract.js (OCR)
+- react-speech-recognition (voz)
+- Supabase (backend, auth, storage)
+- shadcn/ui (UI)
 
-## 🛠️ Stack Tecnológica
+## 🚀 Como usar
 
-### Frontend
-- **React 18** - Biblioteca principal
-- **TypeScript** - Tipagem estática
-- **Vite** - Build tool e desenvolvimento
-- **Tailwind CSS** - Framework de estilização
-- **shadcn/ui** - Componentes de interface
-- **React Router** - Roteamento
-- **React Hook Form** - Gerenciamento de formulários
+1. Clone o repositório:
+   ```bash
+   git clone <URL_DO_SEU_REPOSITORIO>
+   cd prof-ai
+   ```
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Rode o projeto:
+   ```bash
+   npm run dev
+   ```
 
-### Backend & Integrações
-- **Supabase** - Backend-as-a-Service
-  - PostgreSQL Database
-  - Authentication
-  - Row Level Security (RLS)
-  - Edge Functions
-  - Storage
-- **Google Gemini API** - Inteligência Artificial
-- **Lucide React** - Ícones
+## 💡 Exemplos de uso
+- Clique em **Foto** para enviar uma imagem de exercício e receba a explicação da IA.
+- Clique em **Falar** para ditar sua dúvida e ouça a resposta.
+- Veja seu histórico, conquistas e moedas acumuladas.
 
-## 🚀 Configuração e Instalação
+## 🔒 Privacidade
+- Suas imagens e áudios são processados com segurança e não são compartilhados.
+- Evite enviar fotos de pessoas ou dados sensíveis.
 
-### Pré-requisitos
-- Node.js 18+ 
-- npm ou pnpm
-- Conta no Supabase
-- Chave da API Google Gemini
-
-### 1. Clone o repositório
-```bash
-git clone <URL_DO_SEU_REPOSITORIO>
-cd tutor-ai-amigo
-```
-
-### 2. Instale as dependências
-```bash
-npm install
-# ou
-pnpm install
-```
-
-### 3. Configure as variáveis de ambiente
-```bash
-cp .env.example .env.local
-```
-
-Edite o arquivo `.env.local` com suas credenciais:
-- Configure o projeto Supabase
-- Adicione a chave da API Gemini
-- Configure as URLs de redirecionamento
-
-### 4. Configure o Supabase
-
-#### 4.1. Crie um novo projeto no Supabase
-1. Acesse [supabase.com](https://supabase.com)
-2. Crie um novo projeto
-3. Anote a URL e a chave anon do projeto
-
-#### 4.2. Execute as migrações do banco
-As tabelas necessárias já estão configuradas no projeto. O sistema inclui:
-- `profiles` - Perfis dos usuários
-- `historico` - Histórico de interações
-- `exercicios` - Exercícios e respostas
-- `conquistas` - Sistema de conquistas
-- `missoes` - Missões e desafios
-- `uploads` - Gerenciamento de arquivos
-- `limites` - Controle de uso da API
-
-#### 4.3. Configure a API Gemini
-1. No dashboard do Supabase, vá para Settings > Edge Functions
-2. Adicione a secret `GEMINI_API_KEY` com sua chave da API Google Gemini
-
-### 5. Execute o projeto
-```bash
-npm run dev
-# ou
-pnpm dev
-```
-
-O projeto estará disponível em `http://localhost:5173`
+## 📄 Contribuição
+Pull requests são bem-vindos! Veja os comentários no código para entender os fluxos principais.
 
 ## 📁 Estrutura do Projeto
 
@@ -231,7 +182,7 @@ Todas as tabelas implementam RLS para garantir que usuários só acessem seus pr
 ```bash
 git fork <URL_DO_REPOSITORIO>
 git clone <URL_DO_SEU_FORK>
-cd tutor-ai-amigo
+cd prof-ai
 ```
 
 ### 2. Crie uma Branch

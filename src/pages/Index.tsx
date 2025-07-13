@@ -1,16 +1,42 @@
 import { useState } from "react";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, MessageCircle, Trophy, Star, Sparkles, Brain, Target, Users, Award } from "lucide-react";
+import { BookOpen, MessageCircle, Trophy, Star, Sparkles, Brain, Target, Users, Award, LogOut, User, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useConquistas } from "@/hooks/useConquistas";
+import { useLimites } from "@/hooks/useLimites";
+import { ChatDemo } from "@/components/ChatDemo";
+import { ConquistasDisplay } from "@/components/ConquistasDisplay";
+import { UserStats } from "@/components/UserStats";
 import heroTeacher from "@/assets/hero-teacher.jpg";
 
 const Index = () => {
+  const { user, signOut, loading } = useAuth();
+  const { profile } = useProfile();
+  const { conquistas } = useConquistas();
+  const { getLimitStatus } = useLimites();
   const [chatMessage, setChatMessage] = useState("");
-  const [userCoins, setUserCoins] = useState(150);
-  const [currentStreak, setCurrentStreak] = useState(7);
+
+  // Redirect to auth if not logged in
+  if (!loading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <Sparkles className="h-6 w-6 animate-spin" />
+          <span>Carregando...</span>
+        </div>
+      </div>
+    );
+  }
 
   const subjects = [
     { name: "Matemática", icon: "🔢", color: "bg-blue-100" },
@@ -21,11 +47,17 @@ const Index = () => {
     { name: "Inglês", icon: "🇺🇸", color: "bg-red-100" }
   ];
 
+  // Get user data
+  const userCoins = profile?.moedas || 0;
+  const userConquistas = conquistas || [];
+  const questionsLimit = getLimitStatus('perguntas_diarias');
+  const currentStreak = 7; // This would come from a streak calculation
+
   const achievements = [
-    { name: "Primeira Pergunta", icon: "🎯", unlocked: true },
-    { name: "Sequência de 7 Dias", icon: "🔥", unlocked: true },
-    { name: "Explorador", icon: "🗺️", unlocked: false },
-    { name: "Estudioso", icon: "📖", unlocked: false }
+    { name: "Primeira Pergunta", icon: "🎯", unlocked: userConquistas.some(c => c.badge === '🎯') },
+    { name: "Sequência de 7 Dias", icon: "🔥", unlocked: userConquistas.some(c => c.badge === '🔥') },
+    { name: "Explorador", icon: "🗺️", unlocked: userConquistas.some(c => c.badge === '🏆') },
+    { name: "Estudioso", icon: "📖", unlocked: userConquistas.some(c => c.badge === '📚') }
   ];
 
   return (
@@ -33,15 +65,15 @@ const Index = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-primary rounded-xl">
-              <Brain className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Tutor AI Amigo</h1>
-              <p className="text-sm text-muted-foreground">Seu professor particular digital</p>
-            </div>
-          </div>
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-primary rounded-xl">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Tutor AI Amigo</h1>
+                <p className="text-sm text-muted-foreground">Olá, {profile?.nome || 'Estudante'}!</p>
+              </div>
+            </Link>
           
           <div className="flex items-center space-x-4">
             <Badge variant="secondary" className="flex items-center space-x-1">
@@ -52,7 +84,18 @@ const Index = () => {
               <Star className="h-3 w-3 text-warning" />
               <span>{currentStreak} dias</span>
             </Badge>
-            <Button size="sm">Entrar</Button>
+            <Badge variant="outline" className="flex items-center space-x-1">
+              <MessageCircle className="h-3 w-3" />
+              <span>{questionsLimit.current}/{questionsLimit.max} perguntas</span>
+            </Badge>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm">
+                <User className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -139,42 +182,7 @@ const Index = () => {
               </p>
             </div>
 
-            <Card className="bg-gradient-card shadow-card border-0">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gradient-primary rounded-lg">
-                    <MessageCircle className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle>Chat com Professor IA</CardTitle>
-                    <CardDescription>
-                      Digite sua dúvida ou digite "Oi" para começar
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="Ex: Como resolver equações do segundo grau? ou Me ajude com este exercício de português..."
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  className="min-h-[100px] resize-none"
-                />
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      📸 Enviar Foto
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      🎤 Falar
-                    </Button>
-                  </div>
-                  <Button disabled={!chatMessage.trim()}>
-                    Enviar Pergunta
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ChatDemo />
           </div>
         </div>
       </section>
@@ -220,69 +228,8 @@ const Index = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Conquistas */}
-              <Card className="bg-gradient-card shadow-card border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Award className="h-5 w-5 text-success" />
-                    <span>Suas Conquistas</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    {achievements.map((achievement, index) => (
-                      <div 
-                        key={index}
-                        className={`p-4 rounded-xl border-2 text-center transition-all ${
-                          achievement.unlocked 
-                            ? 'border-success bg-success/10' 
-                            : 'border-muted bg-muted/50 opacity-60'
-                        }`}
-                      >
-                        <div className="text-2xl mb-2">{achievement.icon}</div>
-                        <p className="text-sm font-medium">{achievement.name}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Estatísticas */}
-              <Card className="bg-gradient-card shadow-card border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    <span>Seu Progresso</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Sequência atual</span>
-                    <Badge variant="secondary" className="text-lg px-3 py-1">
-                      🔥 {currentStreak} dias
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Moedas acumuladas</span>
-                    <Badge className="text-lg px-3 py-1">
-                      <Sparkles className="h-4 w-4 mr-1" />
-                      {userCoins}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Perguntas respondidas</span>
-                    <Badge variant="outline" className="text-lg px-3 py-1">
-                      💬 23
-                    </Badge>
-                  </div>
-                  <div className="pt-4">
-                    <Button variant="success" className="w-full">
-                      <Trophy className="h-4 w-4 mr-2" />
-                      Ver Todas as Conquistas
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <ConquistasDisplay />
+              <UserStats />
             </div>
           </div>
         </div>

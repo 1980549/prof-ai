@@ -14,7 +14,300 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conquistas: {
+        Row: {
+          badge: string | null
+          data_conquista: string | null
+          descricao: string | null
+          id: number
+          user_id: string | null
+        }
+        Insert: {
+          badge?: string | null
+          data_conquista?: string | null
+          descricao?: string | null
+          id?: number
+          user_id?: string | null
+        }
+        Update: {
+          badge?: string | null
+          data_conquista?: string | null
+          descricao?: string | null
+          id?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conquistas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      exercicios: {
+        Row: {
+          acertou: boolean | null
+          criado_em: string | null
+          dificuldade: string | null
+          enunciado: string | null
+          feedback: string | null
+          id: number
+          materia: string | null
+          moedas_ganhas: number | null
+          resolucao_usuario: string | null
+          resposta_correta: string | null
+          tentativas: number | null
+          user_id: string | null
+        }
+        Insert: {
+          acertou?: boolean | null
+          criado_em?: string | null
+          dificuldade?: string | null
+          enunciado?: string | null
+          feedback?: string | null
+          id?: number
+          materia?: string | null
+          moedas_ganhas?: number | null
+          resolucao_usuario?: string | null
+          resposta_correta?: string | null
+          tentativas?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          acertou?: boolean | null
+          criado_em?: string | null
+          dificuldade?: string | null
+          enunciado?: string | null
+          feedback?: string | null
+          id?: number
+          materia?: string | null
+          moedas_ganhas?: number | null
+          resolucao_usuario?: string | null
+          resposta_correta?: string | null
+          tentativas?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercicios_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      historico: {
+        Row: {
+          audio_url: string | null
+          criado_em: string | null
+          id: number
+          imagem_url: string | null
+          materia: string | null
+          perfil: string | null
+          pergunta: string | null
+          resposta: string | null
+          resultado: Json | null
+          tipo: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          criado_em?: string | null
+          id?: number
+          imagem_url?: string | null
+          materia?: string | null
+          perfil?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          resultado?: Json | null
+          tipo?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          criado_em?: string | null
+          id?: number
+          imagem_url?: string | null
+          materia?: string | null
+          perfil?: string | null
+          pergunta?: string | null
+          resposta?: string | null
+          resultado?: Json | null
+          tipo?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      limites: {
+        Row: {
+          atualizado_em: string | null
+          id: number
+          tipo_limite: string | null
+          user_id: string | null
+          valor_atual: number | null
+          valor_maximo: number | null
+        }
+        Insert: {
+          atualizado_em?: string | null
+          id?: number
+          tipo_limite?: string | null
+          user_id?: string | null
+          valor_atual?: number | null
+          valor_maximo?: number | null
+        }
+        Update: {
+          atualizado_em?: string | null
+          id?: number
+          tipo_limite?: string | null
+          user_id?: string | null
+          valor_atual?: number | null
+          valor_maximo?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "limites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      missoes: {
+        Row: {
+          descricao: string | null
+          fim: string | null
+          id: number
+          inicio: string | null
+          recompensa_moedas: number | null
+          status: string | null
+          titulo: string | null
+          user_id: string | null
+        }
+        Insert: {
+          descricao?: string | null
+          fim?: string | null
+          id?: number
+          inicio?: string | null
+          recompensa_moedas?: number | null
+          status?: string | null
+          titulo?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          descricao?: string | null
+          fim?: string | null
+          id?: number
+          inicio?: string | null
+          recompensa_moedas?: number | null
+          status?: string | null
+          titulo?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "missoes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          conquistas: Json | null
+          created_at: string | null
+          id: string
+          idade: number | null
+          moedas: number | null
+          nome: string | null
+          objetivo: string | null
+          regiao: string | null
+          serie: string | null
+          tipo: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          conquistas?: Json | null
+          created_at?: string | null
+          id?: string
+          idade?: number | null
+          moedas?: number | null
+          nome?: string | null
+          objetivo?: string | null
+          regiao?: string | null
+          serie?: string | null
+          tipo: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          conquistas?: Json | null
+          created_at?: string | null
+          id?: string
+          idade?: number | null
+          moedas?: number | null
+          nome?: string | null
+          objetivo?: string | null
+          regiao?: string | null
+          serie?: string | null
+          tipo?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      uploads: {
+        Row: {
+          contexto: string | null
+          criado_em: string | null
+          id: number
+          tipo: string | null
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          contexto?: string | null
+          criado_em?: string | null
+          id?: number
+          tipo?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          contexto?: string | null
+          criado_em?: string | null
+          id?: number
+          tipo?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

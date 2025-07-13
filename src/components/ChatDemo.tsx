@@ -153,7 +153,14 @@ export const ChatDemo = () => {
 
   // Envio de mensagem por texto/voz + integração IA + histórico + limites
   const handleSendMessage = async () => {
-    if (!message.trim() || !user) return;
+    if (!message.trim() || !user || !profile) {
+      toast({
+        title: "Erro",
+        description: "Seu perfil não foi carregado corretamente. Faça login novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
     // Checagem de limite diário de perguntas
     const canAsk = await checkLimit('perguntas_diarias');
     if (!canAsk) {
@@ -186,6 +193,10 @@ export const ChatDemo = () => {
         moedas: profile?.moedas,
         conquistas: profile?.conquistas || []
       };
+      console.log('Enviando para API:', {
+        message: userMessage,
+        userContext
+      });
       // Chama API Gemini
       const response = await fetch('https://nxincjuhkijzyjjcisml.supabase.co/functions/v1/chat-gemini', {
         method: 'POST',
@@ -199,6 +210,7 @@ export const ChatDemo = () => {
         }),
       });
       const data = await response.json();
+      console.log('Resposta da API:', data, response.status);
       if (!response.ok) {
         throw new Error(data.error || 'Erro ao processar pergunta');
       }

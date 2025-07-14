@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import React from 'react';
 import Tesseract from 'tesseract.js';
+import { CameraCapture } from '@/components/ui/CameraCapture';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export const ChatDemo = () => {
   const { user } = useAuth();
@@ -31,6 +33,13 @@ export const ChatDemo = () => {
   }>>([]);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrText, setOcrText] = useState<string | null>(null);
+
+  // Estado para preview de imagem
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
+  // Estado para modal da câmera
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const {
     transcript,
@@ -55,19 +64,9 @@ export const ChatDemo = () => {
     }
   };
 
-  // Upload de imagem + OCR + integração IA + histórico + limites
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    // Validação de tipo e tamanho
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      toast({ title: 'Arquivo inválido', description: 'Apenas imagens JPEG ou PNG são permitidas.', variant: 'destructive' });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Arquivo muito grande', description: 'O tamanho máximo é 5MB.', variant: 'destructive' });
-      return;
-    }
+  // Refatorar lógica de upload para aceitar File diretamente
+  const uploadImageFile = async (file: File) => {
+    // Validação de tipo e tamanho já foi feita antes
     // Checagem de limite mensal de uploads
     const podeUpload = await checkLimit('uploads_mensais');
     if (!podeUpload) {
@@ -258,6 +257,56 @@ export const ChatDemo = () => {
     }
   };
 
+  // Novo handler para seleção de imagem
+  const handleSelectImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      toast({ title: 'Arquivo inválido', description: 'Apenas imagens JPEG ou PNG são permitidas.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande', description: 'O tamanho máximo é 5MB.', variant: 'destructive' });
+      return;
+    }
+    setSelectedImage(file);
+    setImagePreviewUrl(URL.createObjectURL(file));
+  };
+
+  // Handler para remover imagem
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreviewUrl(null);
+  };
+
+  // Handler para confirmar envio da imagem
+  const handleConfirmImageUpload = async () => {
+    if (!selectedImage) return;
+    await uploadImageFile(selectedImage);
+    handleRemoveImage();
+  };
+
+  // Handler para receber imagem da câmera
+  const handleCameraCapture = async (file: File) => {
+    setCameraOpen(false);
+    await uploadImageFile(file);
+  };
+
+  // Handler antigo adaptado para usar uploadImageFile
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      toast({ title: 'Arquivo inválido', description: 'Apenas imagens JPEG ou PNG são permitidas.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande', description: 'O tamanho máximo é 5MB.', variant: 'destructive' });
+      return;
+    }
+    await uploadImageFile(file);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -276,169 +325,204 @@ export const ChatDemo = () => {
   }
 
   return (
-    <Card className="bg-gradient-card shadow-card border-0">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-primary rounded-lg">
-              <MessageCircle className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle>Chat com Professor IA</CardTitle>
-              <CardDescription>
-                Olá, {profile?.nome}! Como posso te ajudar hoje?
-              </CardDescription>
-            </div>
-          </div>
-          <Badge variant="outline">
-            {profile?.moedas || 0} moedas
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {/* Conversation History */}
-        {conversation.length > 0 && (
-          <div className="max-h-60 overflow-y-auto space-y-3 p-3 bg-muted/30 rounded-lg">
-            {conversation.map((entry, index) => (
-              <div
-                key={index}
-                className={`flex ${entry.type === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    entry.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card text-card-foreground border'
-                  } flex items-center gap-2`}
-                >
-                  {/* Ícones de tipo de mensagem */}
-                  {entry.content.startsWith('[Imagem enviada]') && (
-                    <ImageLucide className="w-4 h-4 text-blue-500 mr-1" />
-                  )}
-                  {entry.type === 'assistant' && (
-                    <Volume1 className="w-4 h-4 text-green-500 mr-1" />
-                  )}
-                  <p className="text-sm">{entry.content}</p>
-                  {/* Botão Ouvir Resposta para mensagens da IA */}
-                  {entry.type === 'assistant' && (
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      aria-label="Ouvir resposta"
-                      onClick={() => speak(entry.content)}
-                      className="ml-2"
-                    >
-                      <Volume2 className="w-5 h-5" />
-                    </Button>
-                  )}
-                  <p className="text-xs opacity-70 mt-1">
-                    {entry.timestamp.toLocaleTimeString()}
-                  </p>
-                </div>
+    <>
+      <Card className="bg-gradient-card shadow-card border-0">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-primary rounded-lg">
+                <MessageCircle className="h-5 w-5 text-white" />
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Dica multimídia e privacidade */}
-        <div className="text-xs text-muted-foreground mt-2 flex flex-col gap-1">
-          <span>
-            💡 Você pode enviar perguntas por texto, voz <Mic className="inline w-3 h-3" /> ou imagem <ImageLucide className="inline w-3 h-3" />. Clique nos ícones abaixo do chat!
-          </span>
-          <span>
-            🔒 Suas imagens e áudios são processados com segurança e não são compartilhados. Evite enviar fotos de pessoas ou dados sensíveis.
-          </span>
-        </div>
-
-        {/* Input Area */}
-        <div className="flex items-center gap-2">
-          <Textarea
-            className="flex-1"
-            placeholder="Digite sua pergunta ou use o microfone..."
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            disabled={isLoading}
-          />
-          {/* Removido botão Falar daqui */}
-        </div>
-        
-        <div className="flex justify-between items-center">
-            <div className="flex space-x-2">
-              {/* Botão de upload de imagem */}
-              <label>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  style={{ display: 'none' }}
-                  onChange={handleImageUpload}
-                  disabled={ocrLoading || isLoading}
-                />
-                <Button variant="outline" size="sm" asChild disabled={ocrLoading || isLoading}>
-                  <span>
-                    <ImageIcon className="h-4 w-4 mr-1" />
-                    {ocrLoading ? 'Analisando...' : 'Foto'}
-                  </span>
-                </Button>
-              </label>
-              {/* Botão Falar funcional movido para cá */}
-              {browserSupportsSpeechRecognition && (
-                <Button
-                  type="button"
-                  variant={listening ? "secondary" : "outline"}
-                  onClick={async () => {
-                    if (listening) {
-                      SpeechRecognition.stopListening();
-                    } else {
-                      resetTranscript();
-                      try {
-                        await SpeechRecognition.startListening({ language: 'pt-BR', continuous: false });
-                      } catch (err) {
-                        toast({
-                          title: "Erro ao acessar microfone",
-                          description: "Verifique as permissões do navegador.",
-                          variant: "destructive",
-                        });
-                        console.error("Erro ao iniciar reconhecimento de voz:", err);
-                      }
-                    }
-                  }}
-                  className={listening ? "animate-pulse border-2 border-primary" : ""}
-                  disabled={isLoading}
-                >
-                  <Mic className="h-4 w-4 mr-1" />
-                  {listening ? "Gravando..." : "Falar"}
-                </Button>
-              )}
+              <div>
+                <CardTitle>Chat com Professor IA</CardTitle>
+                <CardDescription>
+                  Olá, {profile?.nome}! Como posso te ajudar hoje?
+                </CardDescription>
+              </div>
             </div>
-            
-            <Button 
-              onClick={handleSendMessage}
-              disabled={!message.trim() || isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-1" />
-                  Enviar
-                </>
-              )}
-            </Button>
+            <Badge variant="outline">
+              {profile?.moedas || 0} moedas
+            </Badge>
           </div>
-        </CardContent>
-        {/* Exibir texto extraído do OCR, se houver */}
-        {ocrText && (
-          <div className="p-2 bg-muted/50 rounded text-sm mt-2">
-            <b>Texto extraído da imagem:</b>
-            <pre className="whitespace-pre-wrap break-words">{ocrText}</pre>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          {/* Conversation History */}
+          {conversation.length > 0 && (
+            <div className="max-h-60 overflow-y-auto space-y-3 p-3 bg-muted/30 rounded-lg">
+              {conversation.map((entry, index) => (
+                <div
+                  key={index}
+                  className={`flex ${entry.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      entry.type === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card text-card-foreground border'
+                    } flex items-center gap-2`}
+                  >
+                    {/* Ícones de tipo de mensagem */}
+                    {entry.content.startsWith('[Imagem enviada]') && (
+                      <ImageLucide className="w-4 h-4 text-blue-500 mr-1" />
+                    )}
+                    {entry.type === 'assistant' && (
+                      <Volume1 className="w-4 h-4 text-green-500 mr-1" />
+                    )}
+                    <p className="text-sm">{entry.content}</p>
+                    {/* Botão Ouvir Resposta para mensagens da IA */}
+                    {entry.type === 'assistant' && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Ouvir resposta"
+                        onClick={() => speak(entry.content)}
+                        className="ml-2"
+                      >
+                        <Volume2 className="w-5 h-5" />
+                      </Button>
+                    )}
+                    <p className="text-xs opacity-70 mt-1">
+                      {entry.timestamp.toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Dica multimídia e privacidade */}
+          <div className="text-xs text-muted-foreground mt-2 flex flex-col gap-1">
+            <span>
+              💡 Você pode enviar perguntas por texto, voz <Mic className="inline w-3 h-3" /> ou imagem <ImageLucide className="inline w-3 h-3" />. Clique nos ícones abaixo do chat!
+            </span>
+            <span>
+              🔒 Suas imagens e áudios são processados com segurança e não são compartilhados. Evite enviar fotos de pessoas ou dados sensíveis.
+            </span>
           </div>
-        )}
-      </Card>
+
+          {/* Input Area */}
+          <div className="flex items-center gap-2">
+            <Textarea
+              className="flex-1"
+              placeholder="Digite sua pergunta ou use o microfone..."
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
+              disabled={isLoading}
+            />
+            {/* Removido botão Falar daqui */}
+          </div>
+          
+          <div className="flex justify-between items-center">
+              <div className="flex space-x-2">
+                {/* Botão de upload de imagem com captura e preview */}
+                <label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: 'none' }}
+                    onChange={handleSelectImage}
+                    disabled={ocrLoading || isLoading}
+                  />
+                  <Button variant="outline" size="sm" asChild disabled={ocrLoading || isLoading}>
+                    <span>
+                      <ImageIcon className="h-4 w-4 mr-1" />
+                      {ocrLoading ? 'Analisando...' : 'Foto'}
+                    </span>
+                  </Button>
+                </label>
+                {/* Botão Câmera */}
+                {navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCameraOpen(true)}
+                    disabled={ocrLoading || isLoading}
+                  >
+                    📷 Câmera
+                  </Button>
+                )}
+                {/* Preview da imagem selecionada */}
+                {imagePreviewUrl && (
+                  <div className="flex items-center space-x-2">
+                    <img src={imagePreviewUrl} alt="Preview" className="w-16 h-16 object-cover rounded border" />
+                    <Button variant="ghost" size="icon" onClick={handleRemoveImage} aria-label="Remover imagem">
+                      ✕
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={handleConfirmImageUpload} disabled={ocrLoading || isLoading}>
+                      Enviar
+                    </Button>
+                  </div>
+                )}
+                {/* Botão Falar funcional movido para cá */}
+                {browserSupportsSpeechRecognition && (
+                  <Button
+                    type="button"
+                    variant={listening ? "secondary" : "outline"}
+                    onClick={async () => {
+                      if (listening) {
+                        SpeechRecognition.stopListening();
+                      } else {
+                        resetTranscript();
+                        try {
+                          await SpeechRecognition.startListening({ language: 'pt-BR', continuous: false });
+                        } catch (err) {
+                          toast({
+                            title: "Erro ao acessar microfone",
+                            description: "Verifique as permissões do navegador.",
+                            variant: "destructive",
+                          });
+                          console.error("Erro ao iniciar reconhecimento de voz:", err);
+                        }
+                      }
+                    }}
+                    className={listening ? "animate-pulse border-2 border-primary" : ""}
+                    disabled={isLoading}
+                  >
+                    <Mic className="h-4 w-4 mr-1" />
+                    {listening ? "Gravando..." : "Falar"}
+                  </Button>
+                )}
+              </div>
+              
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!message.trim() || isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-1" />
+                    Enviar
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+          {/* Exibir texto extraído do OCR, se houver */}
+          {ocrText && (
+            <div className="p-2 bg-muted/50 rounded text-sm mt-2">
+              <b>Texto extraído da imagem:</b>
+              <pre className="whitespace-pre-wrap break-words">{ocrText}</pre>
+            </div>
+          )}
+        </Card>
+        {/* Modal da câmera */}
+        <Dialog open={cameraOpen} onOpenChange={setCameraOpen}>
+          <DialogContent className="max-w-md">
+            <CameraCapture
+              onCapture={handleCameraCapture}
+              onCancel={() => setCameraOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      </>
     );
   };

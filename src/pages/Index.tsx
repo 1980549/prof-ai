@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
 import { CardsDeAcao } from '@/components/CardsDeAcao';
 import { DepoimentosSocial } from '@/components/DepoimentosSocial';
+import { SeloIAAutonoma } from '@/components/SeloIAAutonoma';
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
@@ -302,6 +303,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
+              {/* Selo IA Autônoma 24/7 - Etapa 3 do roadmap */}
+              <div className="mb-2 flex justify-start">
+                <SeloIAAutonoma />
+              </div>
               <div className="space-y-4">
                 <Badge variant="secondary" className="w-fit">
                   ✨ Seu Professor Digital Personalizado

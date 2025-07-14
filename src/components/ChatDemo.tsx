@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Send, Mic, ImageIcon, Loader2, Volume2, Image as ImageLucide, Volume1, ArrowDown } from 'lucide-react';
+import { MessageCircle, Send, Mic, ImageIcon, Loader2, Volume2, Image as ImageLucide, Volume1, ArrowDown, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useHistorico } from '@/hooks/useHistorico';
@@ -557,67 +557,100 @@ export const ChatDemo = () => {
             </span>
           </div>
 
-          {/* Input Area */}
-          <div className="flex flex-row items-end gap-2 w-full">
-            <Textarea
-              className="flex-1 w-full max-w-full resize-none"
-              placeholder="Digite sua pergunta ou use o microfone..."
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              onKeyDown={handleKeyPress}
-              disabled={isLoading}
-              rows={1}
-              style={{ minHeight: 40 }}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!message.trim() || isLoading}
-              className="shrink-0"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-1" />
-                  Enviar
-                </>
+          {/* Input Area WhatsApp Style */}
+          <div className="flex items-end w-full gap-2 mt-2">
+            <div className="flex-1 flex items-center bg-background rounded-full border px-4 py-2 shadow-sm">
+              <Textarea
+                className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none text-sm placeholder:text-muted-foreground"
+                placeholder="Digite uma mensagem"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
+                disabled={isLoading}
+                rows={1}
+                style={{ minHeight: 40, maxHeight: 120 }}
+              />
+              {/* Botão Foto */}
+              <label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  style={{ display: 'none' }}
+                  onChange={handleSelectImage}
+                  disabled={ocrLoading || isLoading}
+                />
+                <button
+                  type="button"
+                  className="ml-1 w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
+                  tabIndex={-1}
+                  aria-label="Enviar foto"
+                  disabled={ocrLoading || isLoading}
+                >
+                  <ImageIcon className="w-5 h-5 text-primary" />
+                </button>
+              </label>
+              {/* Botão Câmera */}
+              {navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (
+                <button
+                  type="button"
+                  className="ml-1 w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
+                  onClick={() => setCameraOpen(true)}
+                  disabled={ocrLoading || isLoading}
+                  aria-label="Abrir câmera"
+                >
+                  <Camera className="w-5 h-5 text-primary" />
+                </button>
               )}
-            </Button>
+              {/* Botão Falar */}
+              {browserSupportsSpeechRecognition && (
+                <button
+                  type="button"
+                  className={`ml-1 w-10 h-10 flex items-center justify-center rounded-full ${
+                    listening ? 'bg-primary text-primary-foreground animate-pulse' : 'bg-muted hover:bg-primary/10'
+                  } transition`}
+                  onClick={async () => {
+                    if (listening) {
+                      SpeechRecognition.stopListening();
+                    } else {
+                      resetTranscript();
+                      try {
+                        await SpeechRecognition.startListening({ language: 'pt-BR', continuous: false });
+                      } catch (err) {
+                        toast({
+                          title: 'Erro ao acessar microfone',
+                          description: 'Verifique as permissões do navegador.',
+                          variant: 'destructive',
+                        });
+                        console.error('Erro ao iniciar reconhecimento de voz:', err);
+                      }
+                    }
+                  }}
+                  disabled={isLoading}
+                  aria-label={listening ? 'Parar gravação' : 'Falar'}
+                >
+                  <Mic className="w-5 h-5" />
+                </button>
+              )}
+              {/* Botão Enviar */}
+              <button
+                type="button"
+                onClick={handleSendMessage}
+                disabled={!message.trim() || isLoading}
+                className="ml-1 w-10 h-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition shrink-0"
+                aria-label="Enviar mensagem"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
           
           <div className="flex justify-between items-center">
               <div className="flex space-x-2">
-                {/* Botão de upload de imagem com captura e preview */}
-                <label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: 'none' }}
-                    onChange={handleSelectImage}
-                    disabled={ocrLoading || isLoading}
-                  />
-                  <Button variant="outline" size="sm" asChild disabled={ocrLoading || isLoading}>
-                    <span>
-                      <ImageIcon className="h-4 w-4 mr-1" />
-                      {ocrLoading ? 'Analisando...' : 'Foto'}
-                    </span>
-                  </Button>
-                </label>
-                {/* Botão Câmera */}
-                {navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCameraOpen(true)}
-                    disabled={ocrLoading || isLoading}
-                  >
-                    📷 Câmera
-                  </Button>
-                )}
                 {/* Preview da imagem selecionada */}
                 {imagePreviewUrl && (
                   <div className="flex items-center space-x-2">
@@ -629,35 +662,6 @@ export const ChatDemo = () => {
                       Enviar
                     </Button>
                   </div>
-                )}
-                {/* Botão Falar funcional movido para cá */}
-                {browserSupportsSpeechRecognition && (
-                  <Button
-                    type="button"
-                    variant={listening ? "secondary" : "outline"}
-                    onClick={async () => {
-                      if (listening) {
-                        SpeechRecognition.stopListening();
-                      } else {
-                        resetTranscript();
-                        try {
-                          await SpeechRecognition.startListening({ language: 'pt-BR', continuous: false });
-                        } catch (err) {
-                          toast({
-                            title: "Erro ao acessar microfone",
-                            description: "Verifique as permissões do navegador.",
-                            variant: "destructive",
-                          });
-                          console.error("Erro ao iniciar reconhecimento de voz:", err);
-                        }
-                      }
-                    }}
-                    className={listening ? "animate-pulse border-2 border-primary" : ""}
-                    disabled={isLoading}
-                  >
-                    <Mic className="h-4 w-4 mr-1" />
-                    {listening ? "Gravando..." : "Falar"}
-                  </Button>
                 )}
               </div>
               

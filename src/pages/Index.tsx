@@ -14,6 +14,7 @@ import { ChatDemo } from "@/components/ChatDemo";
 import { ConquistasDisplay } from "@/components/ConquistasDisplay";
 import { UserStats } from "@/components/UserStats";
 import heroTeacher from "@/assets/hero-teacher.jpg";
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
@@ -21,6 +22,7 @@ const Index = () => {
   const { conquistas } = useConquistas();
   const { getLimitStatus } = useLimites();
   const [chatMessage, setChatMessage] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
 
   // Redirect to auth if not logged in
   if (!loading && !user) {
@@ -89,7 +91,12 @@ const Index = () => {
               <span>{questionsLimit.current}/{questionsLimit.max} perguntas</span>
             </Badge>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                aria-label="Abrir informações do usuário"
+                onClick={() => setProfileOpen(true)}
+              >
                 <User className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" onClick={signOut}>
@@ -99,6 +106,18 @@ const Index = () => {
           </div>
         </div>
       </header>
+      {/* Modal de Perfil do Usuário */}
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent>
+          <DialogTitle>Perfil do Usuário</DialogTitle>
+          <div className="space-y-2">
+            <p><b>Nome:</b> {profile?.nome}</p>
+            <p><b>Email:</b> {user?.email}</p>
+            <p><b>Tipo de conta:</b> {profile?.tipo}</p>
+            <Button variant="destructive" onClick={signOut}>Sair</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20">

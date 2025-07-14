@@ -14,11 +14,18 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
   const [error, setError] = useState<string | null>(null);
   const [captured, setCaptured] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoTimeout, setVideoTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [videoHasFrame, setVideoHasFrame] = useState(false);
 
+  // Inicia a câmera ao abrir o modal
   useEffect(() => {
     setLoading(true);
     setError(null);
+    setVideoReady(false);
+    setVideoHasFrame(false);
     let localStream: MediaStream | null = null;
+    let timeout: NodeJS.Timeout;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setError('Seu navegador não suporta acesso à câmera.');
       setLoading(false);
@@ -28,11 +35,25 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
       .then((mediaStream) => {
         localStream = mediaStream;
         setStream(mediaStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-          console.log('stream atribuído ao vídeo');
-        }
+        // Retry de atribuição se ref ainda não existir
+        const assignStream = () => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+            console.log('stream atribuído ao vídeo');
+          } else {
+            setTimeout(assignStream, 100);
+          }
+        };
+        assignStream();
         setLoading(false);
+        // Fallback visual se vídeo não carregar em 5s
+        timeout = setTimeout(() => {
+          if (!videoReady) {
+            setError('Não foi possível carregar o vídeo da câmera. Tente recarregar ou usar outro navegador/dispositivo.');
+            console.error('Timeout: vídeo não carregou em 5s');
+          }
+        }, 5000);
+        setVideoTimeout(timeout);
       })
       .catch((err) => {
         setError('Não foi possível acessar a câmera, tente outro navegador/dispositivo.');
@@ -43,21 +64,49 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
       }
+      if (timeout) clearTimeout(timeout);
     };
   }, []);
+
+  // Limpa timeout se vídeo ficar pronto
+  useEffect(() => {
+    if (videoReady && videoTimeout) {
+      clearTimeout(videoTimeout);
+    }
+  }, [videoReady, videoTimeout]);
+
+  const handleCanPlay = () => {
+    setVideoReady(true);
+    if (videoRef.current) {
+      const w = videoRef.current.videoWidth;
+      const h = videoRef.current.videoHeight;
+      setVideoHasFrame(w > 0 && h > 0);
+      console.log('vídeo pronto', { width: w, height: h });
+    }
+  };
 
   const handleCapture = () => {
     if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
+    // Checa se vídeo tem frame válido
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      setError('A câmera ainda não está pronta. Aguarde o vídeo aparecer antes de capturar.');
+      console.error('Tentativa de capturar sem frame válido', { width: video.videoWidth, height: video.videoHeight });
+      return;
+    }
+    // Usa dimensões reais do vídeo
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       const dataUrl = canvas.toDataURL('image/png');
       setCaptured(dataUrl);
-      console.log('Foto capturada');
+      console.log('Foto capturada', { width: video.videoWidth, height: video.videoHeight });
+    } else {
+      setError('Erro ao tentar capturar a imagem.');
+      console.error('Erro ao tentar capturar a imagem: contexto do canvas nulo');
     }
   };
 
@@ -92,10 +141,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
             playsInline
             className="rounded border w-full max-w-xs"
             style={{ width: '320px', height: '240px', background: '#000' }}
-            onCanPlay={() => console.log('vídeo pronto')}
+            onCanPlay={handleCanPlay}
           />
           <div className="flex gap-2">
-            <Button onClick={handleCapture}>Tirar Foto</Button>
+            <Button onClick={handleCapture} disabled={!videoReady || !videoHasFrame}>Tirar Foto</Button>
             <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
           </div>
         </>

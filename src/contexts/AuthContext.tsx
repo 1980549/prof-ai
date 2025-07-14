@@ -112,8 +112,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ) => {
     try {
       setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
-      
+      // Corrigir a URL de redirecionamento para produção e dev
+      let redirectUrl = '';
+      if (import.meta && import.meta.env && import.meta.env.VITE_SITE_URL) {
+        redirectUrl = import.meta.env.VITE_SITE_URL;
+      } else {
+        redirectUrl = window.location.origin + '/';
+      }
+      // Garante que termina com barra
+      if (!redirectUrl.endsWith('/')) redirectUrl += '/';
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

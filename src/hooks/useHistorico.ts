@@ -26,6 +26,7 @@ export const useHistorico = () => {
     startDate?: string;
     endDate?: string;
     limit?: number;
+    offset?: number;
   }) => {
     if (!user) return;
 
@@ -49,8 +50,12 @@ export const useHistorico = () => {
       if (filters?.endDate) {
         query = query.lte('criado_em', filters.endDate);
       }
-      if (filters?.limit) {
-        query = query.limit(filters.limit);
+      if (typeof filters?.limit === 'number') {
+        if (typeof filters?.offset === 'number') {
+          query = query.range(filters.offset, filters.offset + filters.limit - 1);
+        } else {
+          query = query.limit(filters.limit);
+        }
       }
 
       const { data, error } = await query;

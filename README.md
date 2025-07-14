@@ -236,6 +236,19 @@ Para dúvidas ou suporte:
 - Documentação Supabase: [supabase.com/docs](https://supabase.com/docs)
 - Documentação Gemini: [ai.google.dev](https://ai.google.dev)
 
+## ⚠️ Observações sobre Reconhecimento de Voz (Microfone)
+
+- O botão "Falar" utiliza reconhecimento de voz via navegador (react-speech-recognition).
+- Se o navegador bloquear o acesso ao microfone (por permissão negada ou política de segurança), o usuário recebe um aviso na tela (toast) explicando o erro.
+- **Para produção (Netlify):**
+  - É obrigatório o arquivo `public/_headers` com:
+    ```
+    /*
+      Permissions-Policy: microphone=*
+    ```
+  - Sem esse header, navegadores podem bloquear o microfone mesmo em HTTPS.
+- Sempre teste o microfone em produção após deploy.
+
 ---
 
 **Desenvolvido com ❤️ para revolucionar a educação através da tecnologia**

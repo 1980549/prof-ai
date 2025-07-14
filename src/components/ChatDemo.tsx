@@ -15,6 +15,7 @@ import React from 'react';
 import Tesseract from 'tesseract.js';
 import { CameraCapture } from '@/components/ui/CameraCapture';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/Spinner';
 
 export const ChatDemo = () => {
   const { user } = useAuth();
@@ -322,6 +323,8 @@ export const ChatDemo = () => {
   const isFirstLoad = useRef(true);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+  // Estado de loading do histórico (scroll infinito)
+  const [historicoLoading, setHistoricoLoading] = useState(false);
 
   // Reconstrução do chat a partir do histórico do Supabase
   useEffect(() => {
@@ -361,6 +364,7 @@ export const ChatDemo = () => {
   const handleLoadMoreHistorico = useCallback(async () => {
     if (loadingMoreRef.current || !hasMoreHistorico) return;
     loadingMoreRef.current = true;
+    setHistoricoLoading(true);
     const { data, error } = await fetchHistorico({ limit: PAGE_SIZE, offset: historicoOffset });
     if (data && Array.isArray(data) && data.length > 0) {
       const msgs = data
@@ -377,7 +381,7 @@ export const ChatDemo = () => {
           } : null
         ])
         .filter(Boolean)
-        .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        .sort((a, b) => (a.timestamp as Date).getTime() - (b.timestamp as Date).getTime());
       setConversation(prev => [...msgs, ...prev]);
       setHistoricoOffset(historicoOffset + data.length);
       setHasMoreHistorico(data.length === PAGE_SIZE);
@@ -385,6 +389,7 @@ export const ChatDemo = () => {
       setHasMoreHistorico(false);
     }
     loadingMoreRef.current = false;
+    setHistoricoLoading(false);
   }, [fetchHistorico, historicoOffset, hasMoreHistorico]);
 
   // --- NOVOS ESTADOS E REFS PARA SCROLL REVERSO ---
@@ -476,6 +481,14 @@ export const ChatDemo = () => {
               className="max-h-60 overflow-y-auto flex flex-col space-y-3 p-3 bg-muted/30 rounded-lg relative"
               style={{ scrollBehavior: 'smooth' }}
             >
+              {/* Spinner de loading do histórico no topo */}
+              {historicoLoading && (
+                <div className="flex justify-center items-center py-2 absolute left-0 right-0 top-0 z-20 pointer-events-none">
+                  <Spinner className="h-5 w-5 text-primary/70" />
+                </div>
+              )}
+              {/* Espaço para não sobrepor mensagens ao spinner */}
+              {historicoLoading && <div style={{ height: 32 }} />}
               {conversation.map((entry, index) => (
                 <div
                   key={index}

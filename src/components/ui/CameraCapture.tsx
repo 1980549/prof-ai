@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from './button';
+import { DialogTitle, DialogDescription } from './dialog';
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
@@ -16,6 +17,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
+    let localStream: MediaStream | null = null;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setError('Seu navegador não suporta acesso à câmera.');
       setLoading(false);
@@ -23,22 +26,24 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
     }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       .then((mediaStream) => {
+        localStream = mediaStream;
         setStream(mediaStream);
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
+          console.log('stream atribuído ao vídeo');
         }
         setLoading(false);
       })
       .catch((err) => {
-        setError('Não foi possível acessar a câmera. Permissão negada ou indisponível.');
+        setError('Não foi possível acessar a câmera, tente outro navegador/dispositivo.');
         setLoading(false);
+        console.error('Erro ao acessar a câmera:', err);
       });
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
       }
     };
-    // eslint-disable-next-line
   }, []);
 
   const handleCapture = () => {
@@ -52,6 +57,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL('image/png');
       setCaptured(dataUrl);
+      console.log('Foto capturada');
     }
   };
 
@@ -65,24 +71,29 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
       });
   };
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center p-4">
-        <p className="text-red-500 mb-2">{error}</p>
-        <Button onClick={onCancel}>Fechar</Button>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return <div className="p-4 text-center">Carregando câmera...</div>;
-  }
-
   return (
-    <div className="flex flex-col items-center gap-4 p-2">
-      {!captured ? (
+    <div className="flex flex-col items-center gap-4 p-2" aria-describedby="camera-modal-desc">
+      <DialogTitle>Capturar Imagem da Câmera</DialogTitle>
+      <DialogDescription id="camera-modal-desc">
+        Permita o acesso à câmera para tirar uma foto e enviar no chat.
+      </DialogDescription>
+      {error ? (
+        <div className="flex flex-col items-center justify-center p-4">
+          <p className="text-red-500 mb-2">{error}</p>
+          <Button onClick={onCancel}>Fechar</Button>
+        </div>
+      ) : loading ? (
+        <div className="p-4 text-center">Carregando câmera...</div>
+      ) : !captured ? (
         <>
-          <video ref={videoRef} autoPlay playsInline className="rounded border w-full max-w-xs" />
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="rounded border w-full max-w-xs"
+            style={{ width: '320px', height: '240px', background: '#000' }}
+            onCanPlay={() => console.log('vídeo pronto')}
+          />
           <div className="flex gap-2">
             <Button onClick={handleCapture}>Tirar Foto</Button>
             <Button variant="ghost" onClick={onCancel}>Cancelar</Button>

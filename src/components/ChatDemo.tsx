@@ -559,10 +559,10 @@ export const ChatDemo = () => {
           </div>
 
           {/* Input Area WhatsApp Style Multiline */}
-          <div className="flex items-end w-full gap-2 mt-2">
-            <div className="flex-1 flex items-end bg-background rounded-full border px-3 py-2 shadow-sm">
+          <div className="flex items-end w-full gap-0.5 sm:gap-1 md:gap-2 mt-2">
+            <div className="flex-1 flex items-center bg-background rounded-xl md:rounded-full border px-2 md:px-3 py-3 md:py-2 shadow-sm min-h-[44px]">
               <TextareaAutosize
-                className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none text-sm placeholder:text-muted-foreground text-foreground px-2 py-1 min-h-[40px] max-h-[140px] leading-relaxed"
+                className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none text-sm placeholder:text-muted-foreground text-foreground px-1 md:px-2 py-1 min-h-[36px] max-h-[120px] leading-relaxed"
                 placeholder="Digite uma mensagem"
                 value={message}
                 onChange={e => setMessage(e.target.value)}
@@ -584,31 +584,31 @@ export const ChatDemo = () => {
                 />
                 <button
                   type="button"
-                  className="ml-1 w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
+                  className="ml-0.5 w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
                   tabIndex={-1}
                   aria-label="Enviar foto"
                   disabled={ocrLoading || isLoading}
                 >
-                  <ImageIcon className="w-5 h-5 text-primary" />
+                  <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </label>
               {/* Botão Câmera */}
               {navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (
                 <button
                   type="button"
-                  className="ml-1 w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
+                  className="ml-0.5 w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
                   onClick={() => setCameraOpen(true)}
                   disabled={ocrLoading || isLoading}
                   aria-label="Abrir câmera"
                 >
-                  <Camera className="w-5 h-5 text-primary" />
+                  <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </button>
               )}
               {/* Botão Falar */}
               {browserSupportsSpeechRecognition && (
                 <button
                   type="button"
-                  className={`ml-1 w-10 h-10 flex items-center justify-center rounded-full ${
+                  className={`ml-0.5 w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full ${
                     listening ? 'bg-primary text-primary-foreground animate-pulse' : 'bg-muted hover:bg-primary/10'
                   } transition`}
                   onClick={async () => {
@@ -631,7 +631,7 @@ export const ChatDemo = () => {
                   disabled={isLoading}
                   aria-label={listening ? 'Parar gravação' : 'Falar'}
                 >
-                  <Mic className="w-5 h-5" />
+                  <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               )}
               {/* Botão Enviar */}
@@ -639,13 +639,13 @@ export const ChatDemo = () => {
                 type="button"
                 onClick={handleSendMessage}
                 disabled={!message.trim() || isLoading}
-                className="ml-1 w-10 h-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition shrink-0"
+                className="ml-0.5 w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition shrink-0"
                 aria-label="Enviar mensagem"
               >
                 {isLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
               </button>
             </div>

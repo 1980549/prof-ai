@@ -18,7 +18,16 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/Spinner';
 import TextareaAutosize from 'react-textarea-autosize';
 
-export const ChatDemo = () => {
+interface ChatDemoProps {
+  chatMessage?: string;
+  setChatMessage?: (msg: string) => void;
+}
+
+/**
+ * Componente ChatDemo
+ * Agora aceita props opcionais chatMessage/setChatMessage para integração com CardsDeAcao.
+ */
+export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage }) => {
   const { user } = useAuth();
   const { profile, addCoins } = useProfile();
   const { addHistoricoItem } = useHistorico();
@@ -27,7 +36,17 @@ export const ChatDemo = () => {
   const { toast } = useToast();
   const { fetchHistorico } = useHistorico();
 
-  const [message, setMessage] = useState('');
+  // Estado interno de mensagem, sincronizado com prop chatMessage se fornecida
+  const [message, setMessage] = useState(chatMessage || '');
+
+  // Sincroniza message com chatMessage externo
+  useEffect(() => {
+    if (typeof chatMessage === 'string' && chatMessage !== message) {
+      setMessage(chatMessage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatMessage]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [conversation, setConversation] = useState<Array<{
     type: 'user' | 'assistant';
@@ -54,9 +73,13 @@ export const ChatDemo = () => {
   // Reconhecimento de voz: preenche o campo de mensagem com a transcrição
   React.useEffect(() => {
     if (!listening && transcript) {
-      setMessage(transcript);
+      if (setChatMessage) {
+        setChatMessage(transcript);
+      } else {
+        setMessage(transcript);
+      }
     }
-  }, [transcript, listening]);
+  }, [transcript, listening, setChatMessage]);
 
   // Síntese de fala: lê a resposta da IA em voz alta usando a API nativa do navegador
   const speak = (text: string) => {
@@ -175,7 +198,11 @@ export const ChatDemo = () => {
     }
     setIsLoading(true);
     const userMessage = message;
-    setMessage('');
+    if (setChatMessage) {
+      setChatMessage('');
+    } else {
+      setMessage('');
+    }
     // Adiciona mensagem do usuário ao chat
     const userEntry = {
       type: 'user' as const,
@@ -314,6 +341,10 @@ export const ChatDemo = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+    // Permite integração com CardsDeAcao: se setChatMessage for passado, atualiza externo também
+    if (setChatMessage) {
+      setChatMessage((e.target as HTMLTextAreaElement).value);
     }
   };
 
@@ -565,7 +596,13 @@ export const ChatDemo = () => {
                 className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none text-sm placeholder:text-muted-foreground text-foreground px-1 md:px-2 py-1 min-h-[36px] max-h-[120px] leading-relaxed"
                 placeholder="Digite uma mensagem"
                 value={message}
-                onChange={e => setMessage(e.target.value)}
+                onChange={e => {
+                  if (setChatMessage) {
+                    setChatMessage(e.target.value);
+                  } else {
+                    setMessage(e.target.value);
+                  }
+                }}
                 onKeyDown={handleKeyPress}
                 disabled={isLoading}
                 minRows={1}

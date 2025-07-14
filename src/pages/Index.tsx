@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
+import { CardsDeAcao } from '@/components/CardsDeAcao';
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
@@ -376,8 +377,10 @@ const Index = () => {
                 Faça uma pergunta ou peça ajuda com algum exercício
               </p>
             </div>
-
-            <ChatDemo />
+            {/* Cards de Ação - Etapa 1 do roadmap */}
+            <CardsDeAcao onSelecionarAcao={contexto => setChatMessage(contexto)} />
+            {/* Chat principal */}
+            <ChatDemo chatMessage={chatMessage} setChatMessage={setChatMessage} />
           </div>
         </div>
       </section>

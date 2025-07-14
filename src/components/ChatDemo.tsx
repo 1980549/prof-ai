@@ -478,7 +478,7 @@ export const ChatDemo = () => {
           {conversation.length > 0 && (
             <div
               ref={chatContainerRef}
-              className="max-h-60 overflow-y-auto flex flex-col space-y-3 p-3 bg-muted/30 rounded-lg relative"
+              className="flex flex-col space-y-3 overflow-y-auto bg-muted/30 rounded-lg relative max-h-[calc(100vh-10rem)] md:max-h-60 min-h-[200px] p-2 sm:p-3"
               style={{ scrollBehavior: 'smooth' }}
             >
               {/* Spinner de loading do histórico no topo */}
@@ -495,7 +495,7 @@ export const ChatDemo = () => {
                   className={`flex ${entry.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
+                    className={`max-w-[90%] md:max-w-[80%] p-3 px-4 md:px-3 rounded-lg break-words whitespace-pre-line ${
                       entry.type === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-card text-card-foreground border'

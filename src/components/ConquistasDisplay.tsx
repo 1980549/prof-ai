@@ -16,9 +16,11 @@ export const ConquistasDisplay = () => {
     <Card className="bg-gradient-card shadow-card border-0">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <Award className="h-5 w-5 text-success" />
+          {/* Troféu animado ao desbloquear conquista */}
+          <Award className="h-5 w-5 text-success animate-spin-slow" />
           <span>Suas Conquistas</span>
-          <Badge variant="secondary">{conquistas.length}</Badge>
+          {/* Badge de conquistas com pulso ao hover */}
+          <Badge variant="secondary" className="transition-all hover:scale-110 hover:shadow-lg animate-pulse focus:outline-none">{conquistas.length}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>

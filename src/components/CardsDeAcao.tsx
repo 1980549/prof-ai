@@ -59,7 +59,7 @@ export const CardsDeAcao: React.FC<CardsDeAcaoProps> = ({ onSelecionarAcao }) =>
         {cards.map((card, idx) => (
           <button
             key={card.titulo}
-            className="group flex flex-col items-start justify-between bg-card border border-border rounded-2xl shadow-sm p-5 h-full min-h-[160px] transition hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="group flex flex-col items-start justify-between bg-card border border-border rounded-2xl shadow-sm p-5 h-full min-h-[160px] transition-all duration-200 hover:shadow-lg hover:scale-[1.03] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             aria-label={card.titulo}
             tabIndex={0}
             onClick={() => onSelecionarAcao?.(card.contexto)}

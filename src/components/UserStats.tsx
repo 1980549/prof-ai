@@ -53,7 +53,8 @@ export const UserStats = () => {
           <div className="text-center p-3 bg-muted/30 rounded-lg">
             <div className="text-2xl font-bold text-primary">{profile?.moedas || 0}</div>
             <div className="text-xs text-muted-foreground flex items-center justify-center">
-              <Sparkles className="h-3 w-3 mr-1" />
+              {/* Moedas com animação de pulso ao hover */}
+              <Sparkles className="h-3 w-3 mr-1 transition-all hover:scale-125 animate-pulse" />
               Moedas
             </div>
           </div>
@@ -81,7 +82,7 @@ export const UserStats = () => {
         {/* Streak */}
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Sequência de estudos</span>
-          <Badge variant="secondary" className="text-lg px-3 py-1">
+          <Badge variant="secondary" className="text-lg px-3 py-1 animate-bounce transition-all">{/* Badge de streak com bounce */}
             🔥 {stats.streak} dias
           </Badge>
         </div>

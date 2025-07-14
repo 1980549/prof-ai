@@ -558,16 +558,34 @@ export const ChatDemo = () => {
           </div>
 
           {/* Input Area */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-row items-end gap-2 w-full">
             <Textarea
-              className="flex-1"
+              className="flex-1 w-full max-w-full resize-none"
               placeholder="Digite sua pergunta ou use o microfone..."
               value={message}
               onChange={e => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               disabled={isLoading}
+              rows={1}
+              style={{ minHeight: 40 }}
             />
-            {/* Removido botão Falar daqui */}
+            <Button
+              onClick={handleSendMessage}
+              disabled={!message.trim() || isLoading}
+              className="shrink-0"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-1" />
+                  Enviar
+                </>
+              )}
+            </Button>
           </div>
           
           <div className="flex justify-between items-center">
@@ -643,22 +661,7 @@ export const ChatDemo = () => {
                 )}
               </div>
               
-              <Button 
-                onClick={handleSendMessage}
-                disabled={!message.trim() || isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-1" />
-                    Enviar
-                  </>
-                )}
-              </Button>
+              
             </div>
           </CardContent>
           {/* Exibir texto extraído do OCR, se houver */}

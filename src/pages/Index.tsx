@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
 import { CardsDeAcao } from '@/components/CardsDeAcao';
+import { DepoimentosSocial } from '@/components/DepoimentosSocial';
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
@@ -364,6 +365,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+      {/* Bloco de Depoimentos/Prova Social - Etapa 2 do roadmap */}
+      <DepoimentosSocial />
 
       {/* Quick Chat Section */}
       <section className="py-16 bg-muted/30">

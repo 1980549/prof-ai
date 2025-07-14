@@ -573,7 +573,7 @@ export const ChatDemo = () => {
                 style={{ overflowY: 'auto' }}
               />
               {/* Botão Foto */}
-              <label>
+              <label className="ml-0.5 w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition cursor-pointer">
                 <input
                   type="file"
                   accept="image/*"
@@ -582,15 +582,7 @@ export const ChatDemo = () => {
                   onChange={handleSelectImage}
                   disabled={ocrLoading || isLoading}
                 />
-                <button
-                  type="button"
-                  className="ml-0.5 w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-muted hover:bg-primary/10 transition"
-                  tabIndex={-1}
-                  aria-label="Enviar foto"
-                  disabled={ocrLoading || isLoading}
-                >
-                  <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 pointer-events-none" />
               </label>
               {/* Botão Câmera */}
               {navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (

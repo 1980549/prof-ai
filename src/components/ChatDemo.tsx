@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Send, Mic, ImageIcon, Loader2, Volume2, Image as ImageLucide, Volume1 } from 'lucide-react';
+import { MessageCircle, Send, Mic, ImageIcon, Loader2, Volume2, Image as ImageLucide, Volume1, ArrowDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useHistorico } from '@/hooks/useHistorico';
@@ -23,6 +23,7 @@ export const ChatDemo = () => {
   const { checkAndUnlockConquistas } = useConquistas();
   const { checkLimit, incrementLimit } = useLimites();
   const { toast } = useToast();
+  const { fetchHistorico } = useHistorico();
 
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -314,6 +315,127 @@ export const ChatDemo = () => {
     }
   };
 
+  // Paginação do histórico
+  const PAGE_SIZE = 20;
+  const [historicoOffset, setHistoricoOffset] = useState(0);
+  const [hasMoreHistorico, setHasMoreHistorico] = useState(true);
+  const isFirstLoad = useRef(true);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const loadingMoreRef = useRef(false);
+
+  // Reconstrução do chat a partir do histórico do Supabase
+  useEffect(() => {
+    if (!user) return;
+    // Carrega as últimas PAGE_SIZE mensagens ao abrir
+    const loadHistorico = async () => {
+      const { data, error } = await fetchHistorico({ limit: PAGE_SIZE, offset: 0 });
+      if (data && Array.isArray(data)) {
+        // Converte e ordena do mais antigo para o mais recente
+        const msgs = data
+          .flatMap((item: any) => [
+            item.pergunta ? {
+              type: 'user',
+              content: item.pergunta,
+              timestamp: new Date(item.criado_em)
+            } : null,
+            item.resposta ? {
+              type: 'assistant',
+              content: item.resposta,
+              timestamp: new Date(item.criado_em)
+            } : null
+          ])
+          .filter(Boolean)
+          .sort((a, b) => (a.timestamp as Date).getTime() - (b.timestamp as Date).getTime());
+        setConversation(msgs as { type: 'user' | 'assistant'; content: string; timestamp: Date }[]);
+        setHistoricoOffset(data.length);
+        setHasMoreHistorico(data.length === PAGE_SIZE);
+      }
+    };
+    if (isFirstLoad.current) {
+      loadHistorico();
+      isFirstLoad.current = false;
+    }
+  }, [user]);
+
+  // Função para carregar mais histórico (scroll infinito)
+  const handleLoadMoreHistorico = useCallback(async () => {
+    if (loadingMoreRef.current || !hasMoreHistorico) return;
+    loadingMoreRef.current = true;
+    const { data, error } = await fetchHistorico({ limit: PAGE_SIZE, offset: historicoOffset });
+    if (data && Array.isArray(data) && data.length > 0) {
+      const msgs = data
+        .flatMap((item: any) => [
+          item.pergunta ? {
+            type: 'user' as 'user',
+            content: item.pergunta,
+            timestamp: new Date(item.criado_em)
+          } : null,
+          item.resposta ? {
+            type: 'assistant' as 'assistant',
+            content: item.resposta,
+            timestamp: new Date(item.criado_em)
+          } : null
+        ])
+        .filter(Boolean)
+        .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      setConversation(prev => [...msgs, ...prev]);
+      setHistoricoOffset(historicoOffset + data.length);
+      setHasMoreHistorico(data.length === PAGE_SIZE);
+    } else {
+      setHasMoreHistorico(false);
+    }
+    loadingMoreRef.current = false;
+  }, [fetchHistorico, historicoOffset, hasMoreHistorico]);
+
+  // --- NOVOS ESTADOS E REFS PARA SCROLL REVERSO ---
+  const [isAtBottom, setIsAtBottom] = useState(true); // Se o scroll está grudado no fundo
+  const [showGoToBottom, setShowGoToBottom] = useState(false); // Botão "Ir para mais recente"
+  const prevScrollHeightRef = useRef<number | null>(null); // Para manter posição ao carregar mais mensagens
+
+  // --- POSICIONA O SCROLL NO FUNDO AO MONTAR E AO RECEBER NOVAS MENSAGENS ---
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    // Se está grudado no fundo, rola para o fundo ao adicionar mensagem
+    if (isAtBottom) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [conversation, isAtBottom]);
+
+  // --- DETECTA SE O USUÁRIO ESTÁ NO FUNDO OU LONGE (para mostrar botão) ---
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+      const atBottom = distanceFromBottom < 40; // margem de tolerância
+      setIsAtBottom(atBottom);
+      setShowGoToBottom(!atBottom);
+      // Scroll infinito reverso: carrega mais mensagens ao chegar no topo
+      if (container.scrollTop === 0 && hasMoreHistorico) {
+        // Salva altura antes de carregar mais
+        prevScrollHeightRef.current = container.scrollHeight;
+        handleLoadMoreHistorico();
+      }
+    };
+    container.addEventListener('scroll', handleScroll);
+    // Inicializa estado
+    handleScroll();
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [hasMoreHistorico, handleLoadMoreHistorico]);
+
+  // --- AJUSTA SCROLL APÓS CARREGAR MAIS MENSAGENS (scroll infinito reverso) ---
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+    if (prevScrollHeightRef.current !== null) {
+      // Mantém a posição visual após inserir mensagens no topo
+      const diff = container.scrollHeight - prevScrollHeightRef.current;
+      container.scrollTop = diff;
+      prevScrollHeightRef.current = null;
+    }
+  }, [conversation]);
+
   if (!user) {
     return (
       <Card className="bg-gradient-card shadow-card border-0">
@@ -349,7 +471,11 @@ export const ChatDemo = () => {
         <CardContent className="space-y-4">
           {/* Conversation History */}
           {conversation.length > 0 && (
-            <div className="max-h-60 overflow-y-auto space-y-3 p-3 bg-muted/30 rounded-lg">
+            <div
+              ref={chatContainerRef}
+              className="max-h-60 overflow-y-auto flex flex-col space-y-3 p-3 bg-muted/30 rounded-lg relative"
+              style={{ scrollBehavior: 'smooth' }}
+            >
               {conversation.map((entry, index) => (
                 <div
                   key={index}
@@ -389,6 +515,22 @@ export const ChatDemo = () => {
                   </div>
                 </div>
               ))}
+              {/* Botão Ir para mais recente */}
+              {showGoToBottom && (
+                <button
+                  onClick={() => {
+                    const container = chatContainerRef.current;
+                    if (container) {
+                      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                    }
+                  }}
+                  className="absolute right-4 bottom-4 z-10 bg-primary text-primary-foreground rounded-full shadow-lg p-2 flex items-center gap-1 hover:bg-primary/90 transition"
+                  aria-label="Ir para mais recente"
+                >
+                  <ArrowDown className="w-4 h-4" />
+                  <span className="text-xs font-semibold">Ir para mais recente</span>
+                </button>
+              )}
             </div>
           )}
 

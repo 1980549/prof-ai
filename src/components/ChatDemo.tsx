@@ -388,12 +388,21 @@ export const ChatDemo = () => {
                 <Button
                   type="button"
                   variant={listening ? "secondary" : "outline"}
-                  onClick={() => {
+                  onClick={async () => {
                     if (listening) {
                       SpeechRecognition.stopListening();
                     } else {
                       resetTranscript();
-                      SpeechRecognition.startListening({ language: 'pt-BR', continuous: false });
+                      try {
+                        await SpeechRecognition.startListening({ language: 'pt-BR', continuous: false });
+                      } catch (err) {
+                        toast({
+                          title: "Erro ao acessar microfone",
+                          description: "Verifique as permissões do navegador.",
+                          variant: "destructive",
+                        });
+                        console.error("Erro ao iniciar reconhecimento de voz:", err);
+                      }
                     }
                   }}
                   className={listening ? "animate-pulse border-2 border-primary" : ""}

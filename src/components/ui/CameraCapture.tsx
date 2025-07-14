@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from './button';
 import { DialogTitle, DialogDescription } from './dialog';
+import { Spinner } from './Spinner';
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
@@ -132,7 +133,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCance
           <Button onClick={onCancel}>Fechar</Button>
         </div>
       ) : loading ? (
-        <div className="p-4 text-center">Carregando câmera...</div>
+        <div className="flex flex-col items-center justify-center p-4 gap-3">
+          <Spinner />
+          <span className="text-muted-foreground">Aguardando a câmera...</span>
+        </div>
       ) : !captured ? (
         <>
           <video

@@ -16,6 +16,7 @@ import Tesseract from 'tesseract.js';
 import { CameraCapture } from '@/components/ui/CameraCapture';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/Spinner';
+import TextareaAutosize from 'react-textarea-autosize';
 
 export const ChatDemo = () => {
   const { user } = useAuth();
@@ -557,18 +558,19 @@ export const ChatDemo = () => {
             </span>
           </div>
 
-          {/* Input Area WhatsApp Style */}
+          {/* Input Area WhatsApp Style Multiline */}
           <div className="flex items-end w-full gap-2 mt-2">
-            <div className="flex-1 flex items-center bg-background rounded-full border px-4 py-2 shadow-sm">
-              <Textarea
-                className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none text-sm placeholder:text-muted-foreground"
+            <div className="flex-1 flex items-end bg-background rounded-full border px-3 py-2 shadow-sm">
+              <TextareaAutosize
+                className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none text-sm placeholder:text-muted-foreground text-foreground px-2 py-1 min-h-[40px] max-h-[140px] leading-relaxed"
                 placeholder="Digite uma mensagem"
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
                 disabled={isLoading}
-                rows={1}
-                style={{ minHeight: 40, maxHeight: 120 }}
+                minRows={1}
+                maxRows={5}
+                style={{ overflowY: 'auto' }}
               />
               {/* Botão Foto */}
               <label>

@@ -129,59 +129,64 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-primary rounded-xl">
-                <Brain className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Prof AI</h1>
-                <p className="text-sm text-muted-foreground">Olá, {profile?.nome || 'Estudante'}!</p>
-              </div>
-            </Link>
-          
-          <div className="flex items-center space-x-4">
-            <Badge variant="secondary" className="flex items-center space-x-1">
-              <Sparkles className="h-3 w-3" />
-              <span>{userCoins} moedas</span>
-            </Badge>
-            <Badge variant="outline" className="flex items-center space-x-1">
-              <Star className="h-3 w-3 text-warning" />
-              <span>{currentStreak} dias</span>
-            </Badge>
-            <Badge variant="outline" className="flex items-center space-x-1">
-              <MessageCircle className="h-3 w-3" />
-              <span>{questionsLimit.current}/{questionsLimit.max} perguntas</span>
-            </Badge>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                aria-label="Abrir informações do usuário"
-                onClick={() => setProfileOpen(true)}
-              >
-                <User className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={signOut}>
-                <LogOut className="h-4 w-4" />
-              </Button>
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Nome do app */}
+          <Link to="/" className="flex items-center space-x-2 min-w-0">
+            <div className="p-2 bg-gradient-primary rounded-xl flex-shrink-0">
+              <Brain className="h-6 w-6 text-white" />
             </div>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Prof AI</h1>
+          </Link>
+          {/* Botão/avatar de perfil */}
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Abrir menu do usuário"
+              onClick={() => setProfileOpen(true)}
+              className="rounded-full focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <User className="h-6 w-6" />
+            </Button>
           </div>
         </div>
       </header>
       {/* Modal de Perfil do Usuário */}
       <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md w-full">
           <DialogTitle>Perfil do Usuário</DialogTitle>
           <div className="space-y-2">
-            <p><b>Nome:</b> {profile?.nome}</p>
-            <p><b>Email:</b> {user?.email}</p>
-            <p><b>Tipo de conta:</b> {profile?.tipo}</p>
-            <div className="flex gap-2 pt-2">
-              <Button variant="secondary" onClick={() => setEditProfileOpen(true)}>
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-muted p-2">
+                <User className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-lg">{profile?.nome}</p>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <span className="block text-xs text-muted-foreground">Moedas</span>
+                <span className="font-bold text-primary">{profile?.moedas ?? 0}</span>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-2 text-center">
+                <span className="block text-xs text-muted-foreground">Dias</span>
+                <span className="font-bold">{currentStreak}</span>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-2 text-center col-span-2">
+                <span className="block text-xs text-muted-foreground">Perguntas restantes</span>
+                <span className="font-bold">{questionsLimit.current}/{questionsLimit.max}</span>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <Button variant="secondary" onClick={() => setEditProfileOpen(true)} className="flex-1">
                 Editar Perfil
               </Button>
-              <Button variant="destructive" onClick={signOut}>
+              <Button variant="outline" className="flex-1" onClick={() => setProfileOpen(false)}>
+                Fechar
+              </Button>
+              <Button variant="destructive" onClick={signOut} className="flex-1">
                 Sair
               </Button>
             </div>

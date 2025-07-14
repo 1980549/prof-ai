@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,14 +15,77 @@ import { ConquistasDisplay } from "@/components/ConquistasDisplay";
 import { UserStats } from "@/components/UserStats";
 import heroTeacher from "@/assets/hero-teacher.jpg";
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useRef } from 'react';
 
 const Index = () => {
   const { user, signOut, loading } = useAuth();
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const { conquistas } = useConquistas();
   const { getLimitStatus } = useLimites();
   const [chatMessage, setChatMessage] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    nome: profile?.nome || '',
+    email: user?.email || '',
+    tipo: profile?.tipo || 'aluno',
+    idade: profile?.idade ? String(profile.idade) : '',
+    serie: profile?.serie || '',
+    regiao: profile?.regiao || '',
+    objetivo: profile?.objetivo || '',
+  });
+  const { toast } = useToast();
+  const nomeInputRef = useRef<HTMLInputElement>(null);
+
+  // Atualiza form ao abrir modal de edição
+  useEffect(() => {
+    if (editProfileOpen && profile && user) {
+      setEditForm({
+        nome: profile.nome || '',
+        email: user.email || '',
+        tipo: profile.tipo || 'aluno',
+        idade: profile.idade ? String(profile.idade) : '',
+        serie: profile.serie || '',
+        regiao: profile.regiao || '',
+        objetivo: profile.objetivo || '',
+      });
+      setTimeout(() => nomeInputRef.current?.focus(), 100);
+    }
+  }, [editProfileOpen, profile, user]);
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setEditForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editForm.nome.trim()) {
+      toast({ title: 'Nome obrigatório', description: 'Preencha seu nome.', variant: 'destructive' });
+      return;
+    }
+    if (!editForm.email.match(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)) {
+      toast({ title: 'Email inválido', description: 'Digite um email válido.', variant: 'destructive' });
+      return;
+    }
+    setEditLoading(true);
+    const updates = {
+      nome: editForm.nome,
+      tipo: editForm.tipo,
+      idade: editForm.idade !== '' ? Number(editForm.idade) : undefined,
+      serie: editForm.serie,
+      regiao: editForm.regiao,
+      objetivo: editForm.objetivo,
+    };
+    const { error } = await updateProfile(updates);
+    setEditLoading(false);
+    if (!error) {
+      setEditProfileOpen(false);
+      toast({ title: 'Perfil atualizado!', description: 'Suas informações foram salvas.' });
+    }
+  };
 
   // Redirect to auth if not logged in
   if (!loading && !user) {
@@ -114,8 +177,116 @@ const Index = () => {
             <p><b>Nome:</b> {profile?.nome}</p>
             <p><b>Email:</b> {user?.email}</p>
             <p><b>Tipo de conta:</b> {profile?.tipo}</p>
-            <Button variant="destructive" onClick={signOut}>Sair</Button>
+            <div className="flex gap-2 pt-2">
+              <Button variant="secondary" onClick={() => setEditProfileOpen(true)}>
+                Editar Perfil
+              </Button>
+              <Button variant="destructive" onClick={signOut}>
+                Sair
+              </Button>
+            </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Modal de Edição de Perfil */}
+      <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
+        <DialogContent className="max-w-md w-full">
+          <DialogTitle>Editar Perfil</DialogTitle>
+          <form className="space-y-4 mt-2" onSubmit={handleEditSubmit} autoComplete="off">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="nome">Nome</Label>
+              <Input
+                id="nome"
+                name="nome"
+                ref={nomeInputRef}
+                value={editForm.nome}
+                onChange={handleEditChange}
+                required
+                className="w-full"
+                autoFocus
+                placeholder="Seu nome completo"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                value={editForm.email}
+                disabled
+                className="w-full bg-muted/50 cursor-not-allowed"
+                placeholder="Seu email"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="tipo">Tipo de Conta</Label>
+              <select
+                id="tipo"
+                name="tipo"
+                value={editForm.tipo}
+                onChange={handleEditChange}
+                className="w-full rounded-lg border px-3 py-2 bg-background"
+              >
+                <option value="aluno">Aluno</option>
+                <option value="responsavel">Responsável</option>
+                <option value="professor">Professor</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="idade">Idade</Label>
+              <Input
+                id="idade"
+                name="idade"
+                type="number"
+                min="0"
+                value={editForm.idade}
+                onChange={handleEditChange}
+                className="w-full"
+                placeholder="Sua idade"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="serie">Série</Label>
+              <Input
+                id="serie"
+                name="serie"
+                value={editForm.serie}
+                onChange={handleEditChange}
+                className="w-full"
+                placeholder="Ex: 7º ano"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="regiao">Região</Label>
+              <Input
+                id="regiao"
+                name="regiao"
+                value={editForm.regiao}
+                onChange={handleEditChange}
+                className="w-full"
+                placeholder="Ex: SP, RJ, MG..."
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="objetivo">Objetivo</Label>
+              <Input
+                id="objetivo"
+                name="objetivo"
+                value={editForm.objetivo}
+                onChange={handleEditChange}
+                className="w-full"
+                placeholder="Ex: passar de ano, ENEM, reforço..."
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setEditProfileOpen(false)} className="flex-1">
+                Cancelar
+              </Button>
+              <Button type="submit" variant="success" className="flex-1" disabled={editLoading}>
+                {editLoading ? 'Salvando...' : 'Salvar'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 

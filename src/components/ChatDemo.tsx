@@ -277,9 +277,15 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage 
       });
     } catch (error) {
       console.error('Error sending message:', error);
+      let errorMessage = "Não foi possível processar sua pergunta. Tente novamente.";
+      if (error instanceof Error && error.message) {
+        if (error.message.includes('503') || error.message.toLowerCase().includes('overload')) {
+          errorMessage = "O sistema de IA está temporariamente sobrecarregado. Por favor, tente novamente em alguns minutos.";
+        }
+      }
       toast({
         title: "Erro",
-        description: "Não foi possível processar sua pergunta. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

@@ -18,7 +18,7 @@ serve(async (req) => {
       throw new Error('Mensagem é obrigatória');
     }
 
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY1');
     if (!geminiApiKey) {
       throw new Error('Chave da API Gemini não configurada');
     }

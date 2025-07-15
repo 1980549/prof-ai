@@ -394,7 +394,11 @@ const Index = () => {
       </section>
 
       {/* Subjects Grid */}
-      <section className="py-16">
+      {/*
+      <section 
+        aria-label="Matérias disponíveis para estudo" 
+        className="w-full py-16"
+      >
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-foreground mb-4">
@@ -419,6 +423,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* Gamification Section */}
       <section className="py-16 bg-muted/30">

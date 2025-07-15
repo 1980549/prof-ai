@@ -46,12 +46,8 @@ export const useLimites = () => {
   };
 
   const checkLimit = async (tipo: string): Promise<boolean> => {
-    if (!user) return false;
-
-    const limite = limites.find(l => l.tipo_limite === tipo);
-    if (!limite) return true; // If no limit exists, allow action
-
-    return limite.valor_atual < limite.valor_maximo;
+    // Durante o período de testes, sempre permite perguntas
+    return true;
   };
 
   const incrementLimit = async (tipo: string, amount: number = 1) => {

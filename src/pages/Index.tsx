@@ -376,7 +376,7 @@ const Index = () => {
       {/* Quick Chat Section */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-3xl mx-auto"> {/* Reduzido de 4xl para 3xl para centralizar melhor */}
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-foreground mb-4">
                 Experimente agora mesmo!
@@ -393,42 +393,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Subjects Grid */}
-      {/*
-      <section 
-        aria-label="Matérias disponíveis para estudo" 
-        className="w-full py-16"
-      >
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-foreground mb-4">
-              Matérias Disponíveis
-            </h3>
-            <p className="text-lg text-muted-foreground">
-              Suporte completo para todas as disciplinas do Ensino Fundamental
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {subjects.map((subject, index) => (
-              <Card key={index} className="hover:shadow-card transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-card border-0">
-                <CardContent className="p-6 text-center">
-                  <div className={`w-16 h-16 ${subject.color} rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4`}>
-                    {subject.icon}
-                  </div>
-                  <h4 className="font-semibold text-foreground">{subject.name}</h4>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-      */}
-
       {/* Gamification Section */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-4xl mx-auto"> {/* Reduzido de 6xl para 4xl para centralizar melhor */}
             <div className="text-center mb-12">
               <h3 className="text-3xl font-bold text-foreground mb-4">
                 Sistema de Recompensas

@@ -24,7 +24,7 @@ serve(async (req) => {
     }
 
     // Construir o prompt personalizado com contexto do usuário
-    const systemPrompt = `Você é um(a) professor(a) particular digital especializado em ensino fundamental. 
+    const systemPrompt = `Você é um(a) professor(a) particular digital especializado em ensino fundamental.
 
 CONTEXTO DO ALUNO:
 - Nome: ${userContext?.nome || 'Estudante'}
@@ -45,9 +45,11 @@ INSTRUÇÕES:
 - Use português brasileiro
 - Seja didático e paciente
 - Incentive o pensamento crítico
+- Seja breve e direto, evite respostas longas ou muito detalhadas
+- Responda de forma clara, objetiva e natural, como um professor que conversa com o aluno
 ${tipo === 'imagem' ? '- Analise a imagem fornecida e explique o conteúdo de forma educativa' : ''}
 
-Responda de forma educativa, personalizada e motivadora.`;
+Responda de forma educativa, personalizada, motivadora e sucinta.`;
 
     // Preparar o conteúdo para a API Gemini
     const contents = [

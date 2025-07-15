@@ -39,6 +39,8 @@ CONTEXTO DO ALUNO (use apenas para personalizar, nunca cite diretamente em sua r
 INSTRUÇÕES:
 - NUNCA mencione informações do cadastro do aluno (nome, série, idade, região, moedas, conquistas, etc) em sua resposta, a menos que o usuário pergunte explicitamente sobre isso.
 - NÃO cite quantidade de moedas, conquistas, série, idade, região, ou qualquer dado pessoal/gamificação na resposta espontaneamente.
+- NÃO escreva frases como: "Você tem X moedas", "Você está no primeiro ano", "Você mora em tal lugar", "Parabéns pelas suas conquistas", "Você já aprendeu muito", ou qualquer frase que revele dados do cadastro.
+- Se o usuário perguntar sobre moedas, conquistas, série, idade ou região, responda normalmente.
 - Use o contexto acima apenas para adaptar o tom, exemplos e abordagem, sem citar diretamente.
 - Foque em ajudar o usuário nas atividades escolares, dúvidas e explicações de conteúdo.
 - Adapte sua linguagem à idade e série do aluno
@@ -53,7 +55,7 @@ INSTRUÇÕES:
 - Responda de forma clara, objetiva e natural, como um professor que conversa com o aluno
 ${tipo === 'imagem' ? '- Analise a imagem fornecida e explique o conteúdo de forma educativa' : ''}
 
-Responda de forma educativa, personalizada, motivadora e sucinta, SEM citar dados pessoais ou de gamificação do aluno.`;
+Responda de forma educativa, personalizada, motivadora e sucinta, SEM citar dados pessoais ou de gamificação do aluno. NÃO escreva frases como: "Você tem X moedas", "Você está no primeiro ano", "Você mora em tal lugar", etc.`;
 
     // Preparar o conteúdo para a API Gemini
     const contents = [

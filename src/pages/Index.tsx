@@ -371,7 +371,7 @@ const Index = () => {
         </div>
       </section>
       {/* Bloco de Depoimentos/Prova Social - Etapa 2 do roadmap */}
-      <DepoimentosSocial />
+      {/* <DepoimentosSocial /> */}
 
       {/* Quick Chat Section */}
       <section className="py-16 bg-muted/30">

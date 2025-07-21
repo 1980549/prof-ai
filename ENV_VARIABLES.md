@@ -225,3 +225,72 @@ interface CardsDeAcaoProps {
 - 429: Limite excedido
 - 500: Erro interno
 - 503: Serviço indisponível 
+
+## O que está acontecendo?
+
+- O navegador bloqueou a requisição porque a função Edge do Supabase **não está permitindo requisições vindas do domínio do seu site (Netlify)**.
+- Isso impede que o frontend consiga conversar com o backend, resultando em “Failed to fetch” e nenhum retorno da IA.
+
+---
+
+## Como resolver o CORS no Supabase Edge Functions
+
+Você precisa garantir que sua função `multi-ai-proxy` **retorne os headers de CORS corretamente** para todas as origens que você deseja permitir (ex: seu domínio Netlify).
+
+### Passos:
+
+1. **Abra o arquivo da função:**  
+   `supabase/functions/multi-ai-proxy/index.ts`
+
+2. **Verifique se existe algo assim no início do arquivo:**
+   ```typescript
+   const corsHeaders = {
+     "Access-Control-Allow-Origin": "*", // ou coloque seu domínio específico
+     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+     "Access-Control-Allow-Methods": "POST, OPTIONS"
+   };
+   ```
+
+3. **Garanta que o handler OPTIONS está presente:**
+   ```typescript
+   if (req.method === "OPTIONS") {
+     return new Response(null, { headers: corsHeaders });
+   }
+   ```
+
+4. **Garanta que TODAS as respostas (inclusive de erro) retornam esses headers:**
+   ```typescript
+   return new Response(
+     JSON.stringify({ resposta, metadata }),
+     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+   );
+   ```
+
+   E para erros:
+   ```typescript
+   return new Response(
+     JSON.stringify({ error: error.message, fallback: "Desculpe, não consegui processar sua pergunta no momento." }),
+     { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+   );
+   ```
+
+5. **Se quiser restringir para seu domínio Netlify, troque o `*` por:**
+   ```typescript
+   "Access-Control-Allow-Origin": "https://profai.netlify.app"
+   ```
+
+6. **Salve, faça o deploy novamente da função:**
+   ```bash
+   npx supabase functions deploy multi-ai-proxy --project-ref nxincjuhkijzyjjcisml
+   ```
+
+---
+
+## Resumo
+
+- O erro é de CORS, não de código da IA.
+- Corrija os headers de CORS na função.
+- Faça o deploy novamente.
+- Teste no site, deve funcionar normalmente.
+
+Se quiser, posso revisar o trecho do seu código da função para garantir que está tudo certo! Se precisar de um exemplo pronto, só pedir! 

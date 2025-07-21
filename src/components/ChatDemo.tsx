@@ -17,6 +17,7 @@ import { CameraCapture } from '@/components/ui/CameraCapture';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/Spinner';
 import TextareaAutosize from 'react-textarea-autosize';
+import { CardChat } from './CardChat';
 
 // Adiciona tipagem global para ImportMeta.env (Vite)
 declare global {
@@ -59,11 +60,19 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
   }, [chatMessage]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [conversation, setConversation] = useState<Array<{
-    type: 'user' | 'assistant';
+  // Estado do chat agora aceita entradas expandidas
+  type ChatEntry = {
+    type: 'user' | 'assistant' | 'microdesafio' | 'conquista' | 'feedback';
     content: string;
     timestamp: Date;
-  }>>([]);
+    // Props opcionais para gamificação e animações
+    emoji?: string;
+    resultado?: 'acerto' | 'erro';
+    moedas?: number;
+    streak?: number;
+    progresso?: number;
+  };
+  const [conversation, setConversation] = useState<ChatEntry[]>([]);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [ocrText, setOcrText] = useState<string | null>(null);
 
@@ -407,7 +416,7 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
           ])
           .filter(Boolean)
           .sort((a, b) => (a.timestamp as Date).getTime() - (b.timestamp as Date).getTime());
-        setConversation(msgs as { type: 'user' | 'assistant'; content: string; timestamp: Date }[]);
+        setConversation(msgs as ChatEntry[]);
         setHistoricoOffset(data.length);
         setHasMoreHistorico(data.length === PAGE_SIZE);
       }
@@ -499,6 +508,16 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
     }
   }, [conversation]);
 
+  // Exemplo de função utilitária para identificar tipo de mensagem (pode ser expandida)
+  function identificarTipoMensagem(entry: ChatEntry) {
+    // Aqui pode-se usar lógica mais sofisticada no futuro
+    if (entry.type === 'conquista') return 'conquista';
+    if (entry.type === 'microdesafio') return 'microdesafio';
+    if (entry.type === 'feedback') return 'feedback';
+    if (entry.type === 'assistant') return 'feedback'; // fallback para respostas da IA
+    return entry.type;
+  }
+
   if (!user) {
     return (
       <Card className="bg-gradient-card shadow-card border-0">
@@ -545,47 +564,30 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
                   <Spinner className="h-5 w-5 text-primary/70" />
                 </div>
               )}
-              {/* Espaço para não sobrepor mensagens ao spinner */}
               {historicoLoading && <div style={{ height: 32 }} />}
-              {conversation.map((entry, index) => (
-                <div
-                  key={index}
-                  className={`flex ${entry.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[90%] md:max-w-[80%] p-3 px-4 md:px-3 rounded-lg break-words whitespace-pre-line ${
-                      entry.type === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-card text-card-foreground border'
-                    } flex items-center gap-2`}
-                  >
-                    {/* Ícones de tipo de mensagem */}
-                    {entry.content.startsWith('[Imagem enviada]') && (
-                      <ImageLucide className="w-4 h-4 text-blue-500 mr-1" />
-                    )}
-                    {entry.type === 'assistant' && (
-                      <Volume1 className="w-4 h-4 text-green-500 mr-1" />
-                    )}
-                    <p className="text-sm">{entry.content}</p>
-                    {/* Botão Ouvir Resposta para mensagens da IA */}
-                    {entry.type === 'assistant' && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        aria-label="Ouvir resposta"
-                        onClick={() => speak(entry.content)}
-                        className="ml-2"
-                      >
-                        <Volume2 className="w-5 h-5" />
-                      </Button>
-                    )}
-                    <p className="text-xs opacity-70 mt-1">
-                      {entry.timestamp.toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              {/* Renderização dos cards animados e gamificados */}
+              {conversation.map((entry, index) => {
+                // Só passar tipos válidos para CardChat
+                const tipoValido = ['microdesafio', 'conquista', 'feedback'].includes(entry.type)
+                  ? entry.type
+                  : entry.type === 'assistant'
+                  ? 'feedback'
+                  : undefined;
+                return (
+                  <CardChat
+                    key={index}
+                    tipo={tipoValido as 'microdesafio' | 'conquista' | 'feedback'}
+                    conteudo={entry.content}
+                    {...(entry.emoji ? { emoji: entry.emoji } : {})}
+                    {...(entry.resultado ? { resultado: entry.resultado } : {})}
+                    {...(entry.moedas ? { moedas: entry.moedas } : {})}
+                    {...(entry.streak ? { streak: entry.streak } : {})}
+                    {...(entry.progresso ? { progresso: entry.progresso } : {})}
+                    onAudioClick={entry.type === 'assistant' ? () => speak(entry.content) : undefined}
+                    acessivelLabel={entry.type === 'assistant' ? 'Resposta da IA' : 'Mensagem do usuário'}
+                  />
+                );
+              })}
               {/* Botão Ir para mais recente */}
               {showGoToBottom && (
                 <button
@@ -599,7 +601,6 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
                   aria-label="Ir para mais recente"
                 >
                   <ArrowDown className="w-4 h-4" />
-                  <span className="text-xs font-semibold">Ir para mais recente</span>
                 </button>
               )}
             </div>

@@ -27,7 +27,9 @@ const Index = () => {
   const { profile, updateProfile } = useProfile();
   const { conquistas } = useConquistas();
   const { getLimitStatus } = useLimites();
-  const [chatMessage, setChatMessage] = useState("");
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatMomento, setChatMomento] = useState<string | undefined>(undefined);
+  const [chatExtra, setChatExtra] = useState<Record<string, any> | undefined>(undefined);
   const [profileOpen, setProfileOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
@@ -386,9 +388,13 @@ const Index = () => {
               </p>
             </div>
             {/* Cards de Ação - Etapa 1 do roadmap */}
-            <CardsDeAcao onSelecionarAcao={contexto => setChatMessage(contexto)} />
+            <CardsDeAcao onSelecionarAcao={(contexto, momento, extra) => {
+              setChatMessage(contexto);
+              setChatMomento(momento);
+              setChatExtra(extra);
+            }} />
             {/* Chat principal */}
-            <ChatDemo chatMessage={chatMessage} setChatMessage={setChatMessage} />
+            <ChatDemo chatMessage={chatMessage} setChatMessage={setChatMessage} chatMomento={chatMomento} chatExtra={chatExtra} setChatMomento={setChatMomento} setChatExtra={setChatExtra} />
           </div>
         </div>
       </section>

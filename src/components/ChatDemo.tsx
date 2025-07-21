@@ -18,16 +18,27 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/Spinner';
 import TextareaAutosize from 'react-textarea-autosize';
 
+// Adiciona tipagem global para ImportMeta.env (Vite)
+declare global {
+  interface ImportMeta {
+    env: Record<string, string>;
+  }
+}
+
 interface ChatDemoProps {
   chatMessage?: string;
   setChatMessage?: (msg: string) => void;
+  chatMomento?: string;
+  chatExtra?: Record<string, any>;
+  setChatMomento?: (momento?: string) => void;
+  setChatExtra?: (extra?: Record<string, any>) => void;
 }
 
 /**
  * Componente ChatDemo
  * Agora aceita props opcionais chatMessage/setChatMessage para integração com CardsDeAcao.
  */
-export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage }) => {
+export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage, chatMomento, chatExtra, setChatMomento, setChatExtra }) => {
   const { user } = useAuth();
   const { profile, addCoins } = useProfile();
   const { addHistoricoItem } = useHistorico();
@@ -112,8 +123,7 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage 
         content: '[Imagem enviada]\n' + (text ? `Texto extraído: ${text}` : ''),
         timestamp: new Date()
       }]);
-      // Envia texto + imagem para API Gemini
-      setIsLoading(true);
+      // Envia texto + imagem para API multi-ai-proxy
       const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -121,6 +131,8 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage 
         reader.readAsDataURL(file);
       });
       const imageBase64 = await toBase64(file);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://nxincjuhkijzyjjcisml.supabase.co";
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54aW5janVoa2lqenlqamNpc21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTI2MzksImV4cCI6MjA2Nzk2ODYzOX0.UjUY6c4QIBiZB3W2WRhFeW6yZ2mb7zOKv6qCXO7sBHM";
       // Contexto do usuário para personalização
       const userContext = {
         nome: profile?.nome,
@@ -132,17 +144,18 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage 
         moedas: profile?.moedas,
         conquistas: profile?.conquistas || []
       };
-      const response = await fetch('https://nxincjuhkijzyjjcisml.supabase.co/functions/v1/chat-gemini', {
+      const response = await fetch(`${supabaseUrl}/functions/v1/multi-ai-proxy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54aW5janVoa2lqenlqamNpc21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTI2MzksImV4cCI6MjA2Nzk2ODYzOX0.UjUY6c4QIBiZB3W2WRhFeW6yZ2mb7zOKv6qCXO7sBHM`,
+          'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
           message: text,
           image: imageBase64,
           userContext,
-          tipo: 'imagem'
+          tipo: 'imagem',
+          momento: 'recebendo_imagem' // exemplo, pode ser dinâmico
         }),
       });
       const data = await response.json();
@@ -203,6 +216,8 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage 
     } else {
       setMessage('');
     }
+    if (setChatMomento) setChatMomento(undefined);
+    if (setChatExtra) setChatExtra(undefined);
     // Adiciona mensagem do usuário ao chat
     const userEntry = {
       type: 'user' as const,
@@ -220,22 +235,27 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage 
         regiao: profile?.regiao,
         objetivo: profile?.objetivo,
         moedas: profile?.moedas,
-        conquistas: profile?.conquistas || []
+        conquistas: profile?.conquistas || [],
+        ...(chatExtra || {})
       };
       console.log('Enviando para API:', {
         message: userMessage,
         userContext
       });
-      // Chama API Gemini
-      const response = await fetch('https://nxincjuhkijzyjjcisml.supabase.co/functions/v1/chat-gemini', {
+      // Chama API multi-ai-proxy
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://nxincjuhkijzyjjcisml.supabase.co";
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54aW5janVoa2lqenlqamNpc21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTI2MzksImV4cCI6MjA2Nzk2ODYzOX0.UjUY6c4QIBiZB3W2WRhFeW6yZ2mb7zOKv6qCXO7sBHM";
+      const momento = chatMomento;
+      const response = await fetch(`${supabaseUrl}/functions/v1/multi-ai-proxy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54aW5janVoa2lqenlqamNpc21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzOTI2MzksImV4cCI6MjA2Nzk2ODYzOX0.UjUY6c4QIBiZB3W2WRhFeW6yZ2mb7zOKv6qCXO7sBHM`,
+          'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
           message: userMessage,
-          userContext
+          userContext,
+          momento
         }),
       });
       const data = await response.json();

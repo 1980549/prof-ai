@@ -568,11 +568,18 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
               {historicoLoading && <div style={{ height: 32 }} />}
               {/* Renderização dos cards animados e gamificados */}
               {conversation.map((entry, index) => {
-                // Só passar tipos válidos para CardChat
+                if (entry.type === 'user' || entry.type === 'assistant') {
+                  return (
+                    <ChatBubble
+                      key={index}
+                      author={entry.type}
+                      name={entry.type === 'user' ? (profile?.nome || 'Você') : 'Prof AI'}
+                      message={entry.content}
+                    />
+                  );
+                }
                 const tipoValido = ['microdesafio', 'conquista', 'feedback'].includes(entry.type)
                   ? entry.type
-                  : entry.type === 'assistant'
-                  ? 'feedback'
                   : undefined;
                 return (
                   <CardChat
@@ -584,8 +591,6 @@ export const ChatDemo: React.FC<ChatDemoProps> = ({ chatMessage, setChatMessage,
                     {...(entry.moedas ? { moedas: entry.moedas } : {})}
                     {...(entry.streak ? { streak: entry.streak } : {})}
                     {...(entry.progresso ? { progresso: entry.progresso } : {})}
-                    onAudioClick={entry.type === 'assistant' ? () => speak(entry.content) : undefined}
-                    acessivelLabel={entry.type === 'assistant' ? 'Resposta da IA' : 'Mensagem do usuário'}
                   />
                 );
               })}

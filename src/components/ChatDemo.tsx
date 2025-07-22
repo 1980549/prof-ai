@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChatBubble } from './ChatBubble'; // Importa o novo componente
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
